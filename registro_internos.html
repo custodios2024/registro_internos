@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Internos</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        h2, h3 { text-align: center; }
+        label { font-weight: bold; }
+        input, button { width: 100%; margin-bottom: 10px; padding: 10px; }
+        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        .btn:hover { background-color: #0056b3; }
+        .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <script>
+        // Verificar si el usuario está autenticado
+        const loggedIn = localStorage.getItem('loggedIn');
+
+        if (!loggedIn) {
+            // Redirige a la página de inicio de sesión si no está autenticado
+            window.location.href = 'login.html';
+        }
+    </script>
+    <div class="container">
+        <h3>Centro de Internamiento:</h3>
+        <input type="text" id="centroInternamiento" name="centroInternamiento" placeholder="Ingrese el nombre del centro" required>
+
+        <h2>Registro de Internos</h2>
+        <form id="registroForm">
+            <label for="fecha">Fecha:</label>
+            <input type="date" id="fecha" name="fecha" required>
+
+            <label for="hora">Hora:</label>
+            <input type="time" id="hora" name="hora" required>
+
+            <label for="motivoOrdinario">Motivo Ordinario:</label>
+            <input type="text" id="motivoOrdinario" name="motivoOrdinario" required>
+
+            <label for="motivoExtraordinario">Motivo Extraordinario:</label>
+            <input type="text" id="motivoExtraordinario" name="motivoExtraordinario" required>
+
+            <label for="excarcelados">Excarcelados:</label>
+            <input type="number" id="excarcelados" name="excarcelados" required>
+
+            <label for="presentes">Presentes:</label>
+            <input type="number" id="presentes" name="presentes" required oninput="sumarTotal()">
+
+            <label for="total">Total:</label>
+            <input type="number" id="total" name="total" required readonly>
+
+            <label for="custodioResponsable">Custodio Responsable:</label>
+            <input type="text" id="custodioResponsable" name="custodioResponsable" required>
+
+            <label for="personalDGRS">Personal de la D.G.R.S.:</label>
+            <input type="text" id="personalDGRS" name="personalDGRS" required>
+
+            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
+            <button type="button" class="btn" onclick="exportarPDF()">Guardar como PDF</button>
+        </form>
+        <pre id="output" class="output"></pre>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        function sumarTotal() {
+            const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
+            const presentes = parseInt(document.getElementById('presentes').value) || 0;
+            document.getElementById('total').value = excarcelados + presentes;
+        }
+
+        function guardarRegistro() {
+            let centroInternamiento = document.getElementById('centroInternamiento').value;
+            centroInternamiento = centroInternamiento.toUpperCase();
+
+            const form = document.getElementById('registroForm');
+            const formData = new FormData(form);
+            let output = `Centro de Internamiento: ${centroInternamiento}\nRegistro de Internos:\n`;
+            formData.forEach((value, key) => {
+                output += `${capitalizeFirstLetter(key)}: ${value}\n`;
+            });
+            document.getElementById('output').innerText = output;
+        }
+
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+
+            let centroInternamiento = document.getElementById('centroInternamiento').value;
+            centroInternamiento = centroInternamiento.toUpperCase();
+
+            // Título
+            doc.setFontSize(18);
+            doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, 20);
+            doc.text('Registro de Internos', 20, 30);
+
+            // Obtener datos del formulario
+            const formData = new FormData(document.getElementById('registroForm'));
+            const data = [];
+            formData.forEach((value, key) => {
+                data.push([formatLabel(key), value]);
+            });
+
+            // Agregar tabla al PDF en horizontal
+            doc.autoTable({
+                head: [['Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.']],
+                body: [data.map(item => item[1])],
+                startY: 40
+            });
+
+            // Guardar el PDF
+            doc.save('registro_internos.pdf');
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        function formatLabel(key) {
+            return key.replace(/([A-Z])/g, ' $1').replace('_', ' ').toUpperCase();
+        }
+    </script>
+</body>
+</html>

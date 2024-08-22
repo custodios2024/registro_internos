@@ -26,6 +26,7 @@
         }
     </script>
     <div class="container">
+        <button type="button" class="btn" onclick="logout()">Cerrar Sesión</button>
         <h3>Centro de Internamiento:</h3>
         <input type="text" id="centroInternamiento" name="centroInternamiento" placeholder="Ingrese el nombre del centro" required>
 
@@ -67,6 +68,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
     <script>
+        function logout() {
+            localStorage.removeItem('loggedIn');
+            localStorage.removeItem('registros'); // Limpia los registros al cerrar sesión
+            window.location.href = 'login.html';
+        }
+
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
             const presentes = parseInt(document.getElementById('presentes').value) || 0;
@@ -74,11 +81,20 @@
         }
 
         function guardarRegistro() {
-            let centroInternamiento = document.getElementById('centroInternamiento').value;
-            centroInternamiento = centroInternamiento.toUpperCase();
+            let registros = JSON.parse(localStorage.getItem('registros')) || [];
 
-            const form = document.getElementById('registroForm');
-            const formData = new FormData(form);
+            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+            const formData = new FormData(document.getElementById('registroForm'));
+            let registro = { centroInternamiento };
+            
+            formData.forEach((value, key) => {
+                registro[key] = value;
+            });
+            
+            registros.push(registro);
+            localStorage.setItem('registros', JSON.stringify(registros));
+            
+            // Actualizar la salida en la página
             let output = `Centro de Internamiento: ${centroInternamiento}\nRegistro de Internos:\n`;
             formData.forEach((value, key) => {
                 output += `${capitalizeFirstLetter(key)}: ${value}\n`;
@@ -90,38 +106,39 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
 
-            let centroInternamiento = document.getElementById('centroInternamiento').value;
-            centroInternamiento = centroInternamiento.toUpperCase();
+            let registros = JSON.parse(localStorage.getItem('registros')) || [];
+            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
 
-            // Título
             doc.setFontSize(18);
             doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, 20);
             doc.text('Registro de Internos', 20, 30);
 
-            // Obtener datos del formulario
-            const formData = new FormData(document.getElementById('registroForm'));
-            const data = [];
-            formData.forEach((value, key) => {
-                data.push([formatLabel(key), value]);
-            });
+            const data = registros.map(registro => [
+                registro.fecha, 
+                registro.hora, 
+                registro.motivoOrdinario, 
+                registro.motivoExtraordinario, 
+                registro.excarcelados, 
+                registro.presentes, 
+                registro.total, 
+                registro.custodioResponsable, 
+                registro.personalDGRS
+            ]);
 
-            // Agregar tabla al PDF en horizontal
             doc.autoTable({
                 head: [['Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.']],
-                body: [data.map(item => item[1])],
+                body: data,
                 startY: 40
             });
 
-            // Guardar el PDF
             doc.save('registro_internos.pdf');
+            
+            // Limpia el almacenamiento después de generar el PDF
+            localStorage.removeItem('registros');
         }
 
         function capitalizeFirstLetter(string) {
             return string.charAt(0).toUpperCase() + string.slice(1);
-        }
-
-        function formatLabel(key) {
-            return key.replace(/([A-Z])/g, ' $1').replace('_', ' ').toUpperCase();
         }
     </script>
 </body>

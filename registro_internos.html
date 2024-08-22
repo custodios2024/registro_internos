@@ -22,6 +22,11 @@
         if (!loggedIn) {
             window.location.href = 'index.html';
         }
+        
+        function logout() {
+            localStorage.removeItem('loggedIn');
+            window.location.href = 'index.html';
+        }
     </script>
     <div class="container">
         <h3>Centro de Internamiento:</h3>
@@ -59,6 +64,7 @@
             <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
             <button type="button" class="btn" onclick="exportarPDF()">Guardar como PDF</button>
         </form>
+        <button type="button" class="btn" onclick="logout()">Cerrar Sesión</button>
         <pre id="output" class="output"></pre>
     </div>
 
@@ -97,10 +103,14 @@
             let centroInternamiento = document.getElementById('centroInternamiento').value;
             centroInternamiento = centroInternamiento.toUpperCase();
 
+            // Agregar logo al PDF
+            const logo = 'data:image/png;base64,[BASE64_IMAGE]'; // Reemplazar [BASE64_IMAGE] con el base64 de tu logo
+            doc.addImage(logo, 'PNG', 10, 10, 50, 20);
+
             // Título
             doc.setFontSize(18);
-            doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, 20);
-            doc.text('Registro de Internos', 20, 30);
+            doc.text(`Centro de Internamiento: ${centroInternamiento}`, 70, 20);
+            doc.text('Registro de Internos', 70, 30);
 
             // Obtener todos los registros
             const registros = JSON.parse(localStorage.getItem('registros')) || [];

@@ -19,12 +19,9 @@
     <script>
         // Verificar si el usuario está autenticado
         const loggedIn = localStorage.getItem('loggedIn');
+
         if (!loggedIn) {
-            window.location.href = 'index.html';
-        }
-        
-        function logout() {
-            localStorage.removeItem('loggedIn');
+            // Redirige a la página de inicio de sesión si no está autenticado
             window.location.href = 'index.html';
         }
     </script>
@@ -63,8 +60,8 @@
 
             <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
             <button type="button" class="btn" onclick="exportarPDF()">Guardar como PDF</button>
+            <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
         </form>
-        <button type="button" class="btn" onclick="logout()">Cerrar Sesión</button>
         <pre id="output" class="output"></pre>
     </div>
 
@@ -78,22 +75,26 @@
         }
 
         function guardarRegistro() {
+            let centroInternamiento = document.getElementById('centroInternamiento').value;
+            centroInternamiento = centroInternamiento.toUpperCase();
+
             const form = document.getElementById('registroForm');
             const formData = new FormData(form);
-            let registro = {};
+            const registro = {};
             formData.forEach((value, key) => {
                 registro[key] = value;
             });
 
-            // Obtener registros existentes
+            // Obtener registros previos o inicializar
             let registros = JSON.parse(localStorage.getItem('registros')) || [];
             registros.push(registro);
-
-            // Guardar los registros actualizados
             localStorage.setItem('registros', JSON.stringify(registros));
 
-            // Mostrar mensaje de éxito
-            document.getElementById('output').innerText = 'Registro guardado con éxito';
+            let output = `Centro de Internamiento: ${centroInternamiento}\nRegistro de Internos:\n`;
+            for (const [key, value] of Object.entries(registro)) {
+                output += `${capitalizeFirstLetter(key)}: ${value}\n`;
+            }
+            document.getElementById('output').innerText = output;
         }
 
         function exportarPDF() {
@@ -103,38 +104,52 @@
             let centroInternamiento = document.getElementById('centroInternamiento').value;
             centroInternamiento = centroInternamiento.toUpperCase();
 
-            // Agregar logo al PDF
-            const logo = 'data:image/png;base64,[BASE64_IMAGE]'; // Reemplazar [BASE64_IMAGE] con el base64 de tu logo
-            doc.addImage(logo, 'PNG', 10, 10, 50, 20);
+            // Agregar logo al PDF usando una URL pública
+            const logoUrl = 'https://github.com/custodios2024/registro_internos/blob/main/SSPC%20IMAGEN%203.jpg?raw=true';
+            const img = new Image();
+            img.onload = function() {
+                doc.addImage(img, 'JPEG', 10, 10, 50, 20);
 
-            // Título
-            doc.setFontSize(18);
-            doc.text(`Centro de Internamiento: ${centroInternamiento}`, 70, 20);
-            doc.text('Registro de Internos', 70, 30);
+                // Título
+                doc.setFontSize(18);
+                doc.text(`Centro de Internamiento: ${centroInternamiento}`, 70, 20);
+                doc.text('Registro de Internos', 70, 30);
 
-            // Obtener todos los registros
-            const registros = JSON.parse(localStorage.getItem('registros')) || [];
-            const data = registros.map(registro => [
-                registro.fecha,
-                registro.hora,
-                registro.motivoOrdinario,
-                registro.motivoExtraordinario,
-                registro.excarcelados,
-                registro.presentes,
-                registro.total,
-                registro.custodioResponsable,
-                registro.personalDGRS
-            ]);
+                // Obtener todos los registros
+                const registros = JSON.parse(localStorage.getItem('registros')) || [];
+                const data = registros.map(registro => [
+                    registro.fecha,
+                    registro.hora,
+                    registro.motivoOrdinario,
+                    registro.motivoExtraordinario,
+                    registro.excarcelados,
+                    registro.presentes,
+                    registro.total,
+                    registro.custodioResponsable,
+                    registro.personalDGRS
+                ]);
 
-            // Agregar tabla al PDF en horizontal
-            doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.']],
-                body: data,
-                startY: 40
-            });
+                // Agregar tabla al PDF en horizontal
+                doc.autoTable({
+                    head: [['Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.']],
+                    body: data,
+                    startY: 40
+                });
 
-            // Guardar el PDF
-            doc.save('registro_internos.pdf');
+                // Guardar el PDF
+                doc.save('registro_internos.pdf');
+            };
+            img.src = logoUrl; // Establece la URL de la imagen
+        }
+
+        function cerrarSesion() {
+            // Eliminar el estado de autenticación y redirigir al inicio de sesión
+            localStorage.removeItem('loggedIn');
+            window.location.href = 'index.html';
+        }
+
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
         }
     </script>
 </body>

@@ -29,7 +29,8 @@
     </script>
     <div class="container">
         <h3 id="centroInternamientoHeader">Centro de Internamiento:</h3>
-        <input type="text" id="centroInternamiento" name="centroInternamiento" placeholder="Ingrese el nombre del centro" required>
+        <!-- Campo de texto con valor por defecto editable -->
+        <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" required>
 
         <h2>Registro de Internos</h2>
         <form id="registroForm">
@@ -61,7 +62,8 @@
             <input type="text" id="personalDGRS" name="personalDGRS" required>
 
             <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar como PDF</button>
+            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
         </form>
         <div class="record-list" id="recordList"></div>
@@ -81,117 +83,98 @@
             let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
             const form = document.getElementById('registroForm');
             const formData = new FormData(form);
-            const registro = {};
+
+            let registro = { centroInternamiento };
             formData.forEach((value, key) => {
                 registro[key] = value.toUpperCase();
             });
 
-            // Obtener la fecha actual del registro
-            const fecha = formData.get('fecha');
-            if (!fecha) {
-                alert('Por favor, ingrese una fecha.');
-                return;
+            let registros = JSON.parse(localStorage.getItem('registros')) || [];
+            if (registros.length < 10) {
+                registros.push(registro);
+                localStorage.setItem('registros', JSON.stringify(registros));
+                mostrarRegistros();
+            } else {
+                alert('Se han alcanzado los 10 registros del día.');
             }
+        }
 
-            // Obtener registros previos o inicializar
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            
-            if (!registrosPorFecha[fecha]) {
-                registrosPorFecha[fecha] = [];
-            }
+        function mostrarRegistros() {
+            let registros = JSON.parse(localStorage.getItem('registros')) || [];
+            const recordList = document.getElementById('recordList');
+            recordList.innerHTML = '';
 
-            // Verificar si ya hay 6 registros para la fecha seleccionada
-            if (registrosPorFecha[fecha].length >= 6) {
-                alert('Ya se han guardado 6 registros para esta fecha.');
-                return;
-            }
-
-            registrosPorFecha[fecha].push(registro);
-            localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-
-            mostrarRegistros(fecha);
-
-            let output = `Centro de Internamiento: ${centroInternamiento}\nRegistro de Internos:\n`;
-            for (const [key, value] of Object.entries(registro)) {
-                output += `${capitalizeFirstLetter(key)}: ${value}\n`;
-            }
-            document.getElementById('output').innerText = output;
+            registros.forEach((registro, index) => {
+                const registroText = document.createElement('div');
+                registroText.innerText = `${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivoOrdinario}`;
+                recordList.appendChild(registroText);
+            });
         }
 
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
-
-            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
-
-            // Título
-            doc.setFontSize(18);
-            doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, 30);
-            doc.setFontSize(16);
-            doc.text('Registro de Internos', doc.internal.pageSize.getWidth() / 2, 40, { align: 'center' });
-
-            // Obtener todos los registros por fecha
-            const registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            const data = [];
-
-            for (const [fecha, registros] of Object.entries(registrosPorFecha)) {
-                registros.forEach(registro => {
-                    data.push([
-                        fecha,
-                        registro.hora,
-                        registro.motivoOrdinario,
-                        registro.motivoExtraordinario,
-                        registro.excarcelados,
-                        registro.presentes,
-                        registro.total,
-                        registro.custodioResponsable,
-                        registro.personalDGRS
-                    ]);
-                });
+            let registros = JSON.parse(localStorage.getItem('registros')) || [];
+            if (registros.length === 0) {
+                alert('No hay registros para exportar.');
+                return;
             }
 
-            // Agregar tabla al PDF en horizontal
+            let centroInternamiento = registros[0].centroInternamiento;
+
+            doc.setFontSize(18);
+            doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, 20);
+            doc.text('Registro de Internos del Día', 20, 30);
+
+            const data = registros.map(registro => Object.values(registro));
+            const columns = Object.keys(registros[0]).map(key => formatLabel(key));
+
             doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.']],
+                head: [columns],
                 body: data,
-                startY: 50
+                startY: 40
             });
 
-            // Guardar el PDF
-            doc.save('registro_internos.pdf');
+            doc.save('registro_internos_dia.pdf');
+        }
+
+        function exportarPDFCompleto() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            let registros = JSON.parse(localStorage.getItem('registros')) || [];
+            if (registros.length === 0) {
+                alert('No hay registros para exportar.');
+                return;
+            }
+
+            doc.setFontSize(18);
+            doc.text('Registros Completos de Internos', 20, 20);
+
+            const data = registros.map(registro => Object.values(registro));
+            const columns = Object.keys(registros[0]).map(key => formatLabel(key));
+
+            doc.autoTable({
+                head: [columns],
+                body: data,
+                startY: 30
+            });
+
+            doc.save('registro_internos_completo.pdf');
         }
 
         function cerrarSesion() {
-            // Eliminar el estado de autenticación y redirigir al inicio de sesión
             localStorage.removeItem('loggedIn');
+            localStorage.removeItem('registros');
             window.location.href = 'index.html';
         }
 
-        function capitalizeFirstLetter(string) {
-            return string.charAt(0).toUpperCase() + string.slice(1);
+        function formatLabel(key) {
+            return key.replace(/([A-Z])/g, ' $1').replace('_', ' ').toUpperCase();
         }
 
-        function mostrarRegistros(fecha) {
-            const registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            const registros = registrosPorFecha[fecha] || [];
-            const recordList = document.getElementById('recordList');
-            recordList.innerHTML = `<h4>Registros para la fecha: ${fecha}</h4>`;
-
-            registros.forEach((registro, index) => {
-                let registroHtml = `<strong>Registro ${index + 1}:</strong><br>`;
-                for (const [key, value] of Object.entries(registro)) {
-                    registroHtml += `${capitalizeFirstLetter(key)}: ${value}<br>`;
-                }
-                registroHtml += '<br>';
-                recordList.innerHTML += registroHtml;
-            });
-        }
-
+        // Mostrar registros al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
-            const fechaInput = document.getElementById('fecha');
-            fechaInput.addEventListener('change', (event) => {
-                mostrarRegistros(event.target.value);
-            });
+            mostrarRegistros();
         });
     </script>
 </body>

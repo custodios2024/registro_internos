@@ -74,9 +74,31 @@
         <pre id="output" class="output"></pre>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <!-- Importación de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js"></script>
+    <!-- TODO: Agrega otros SDKs de Firebase que necesites -->
+
     <script>
+        // Importar las funciones que necesitas de los SDKs que necesitas
+        import { initializeApp } from "firebase/app";
+        import { getAnalytics } from "firebase/analytics";
+
+        // Tu configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyD1d3Un7HltXCFk_WssjyYmZabH0JRxACM",
+            authDomain: "dema-26548.firebaseapp.com",
+            projectId: "dema-26548",
+            storageBucket: "dema-26548.appspot.com",
+            messagingSenderId: "982226404755",
+            appId: "1:982226404755:web:54430def1cc9550e835466",
+            measurementId: "G-VSBV5V5QWM"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app); 
+
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
             const presentes = parseInt(document.getElementById('presentes').value) || 0;
@@ -157,28 +179,14 @@
 
             doc.setFontSize(18);
             doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, 20);
-            doc.text(`Registro de Internos del Día ${fechaSeleccionada}`, 20, 30);
+            doc.text(`Registro de Internos del ${fechaSeleccionada}`, 20, 30);
+            doc.setFontSize(12);
 
-            const data = registros.map(registro => [
-                registro.fecha, 
-                registro.hora, 
-                registro.motivoOrdinario, 
-                registro.motivoExtraordinario, 
-                registro.excarcelados, 
-                registro.presentes, 
-                registro.total, 
-                registro.custodioResponsable, 
-                registro.personalDGRS
-            ]);
-
-            const columns = [
-                'Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-            ];
-
-            doc.autoTable({
-                head: [columns],
-                body: data,
-                startY: 40
+            let startY = 40;
+            registros.forEach((registro, index) => {
+                let registroText = `${index + 1}. Fecha: ${registro.fecha} Hora: ${registro.hora} Motivo Ordinario: ${registro.motivoOrdinario} Motivo Extraordinario: ${registro.motivoExtraordinario} Excarcelados: ${registro.excarcelados} Presentes: ${registro.presentes} Total: ${registro.total} Custodio Responsable: ${registro.custodioResponsable} Personal DGRS: ${registro.personalDGRS}`;
+                doc.text(registroText, 20, startY);
+                startY += 10;
             });
 
             doc.save(`registro_internos_${fechaSeleccionada}.pdf`);
@@ -189,40 +197,30 @@
             const doc = new jsPDF('landscape');
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
 
-            let startY = 20;
+            if (Object.keys(registrosPorFecha).length === 0) {
+                alert('No hay registros para exportar.');
+                return;
+            }
+
             let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
 
-            Object.keys(registrosPorFecha).forEach(fecha => {
+            doc.setFontSize(18);
+            doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, 20);
+            doc.text('Registro Completo de Internos', 20, 30);
+            doc.setFontSize(12);
+
+            let startY = 40;
+            for (let fecha in registrosPorFecha) {
                 let registros = registrosPorFecha[fecha];
-
-                doc.setFontSize(18);
-                doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, startY);
-                doc.text(`Registro de Internos del Día ${fecha}`, 20, startY + 10);
-
-                const data = registros.map(registro => [
-                    registro.fecha, 
-                    registro.hora, 
-                    registro.motivoOrdinario, 
-                    registro.motivoExtraordinario, 
-                    registro.excarcelados, 
-                    registro.presentes, 
-                    registro.total, 
-                    registro.custodioResponsable, 
-                    registro.personalDGRS
-                ]);
-
-                const columns = [
-                    'Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-                ];
-
-                doc.autoTable({
-                    head: [columns],
-                    body: data,
-                    startY: startY + 20
+                doc.text(`Registros del ${fecha}:`, 20, startY);
+                startY += 10;
+                registros.forEach((registro, index) => {
+                    let registroText = `${index + 1}. Fecha: ${registro.fecha} Hora: ${registro.hora} Motivo Ordinario: ${registro.motivoOrdinario} Motivo Extraordinario: ${registro.motivoExtraordinario} Excarcelados: ${registro.excarcelados} Presentes: ${registro.presentes} Total: ${registro.total} Custodio Responsable: ${registro.custodioResponsable} Personal DGRS: ${registro.personalDGRS}`;
+                    doc.text(registroText, 20, startY);
+                    startY += 10;
                 });
-
-                startY = doc.lastAutoTable.finalY + 20;
-            });
+                startY += 10;
+            }
 
             doc.save('registro_internos_completo.pdf');
         }
@@ -232,9 +230,12 @@
             window.location.href = 'index.html';
         }
 
-        document.addEventListener('DOMContentLoaded', (event) => {
+        window.onload = function() {
             actualizarFechasDisponibles();
-        });
+        }
     </script>
+
+    <!-- Agregar las bibliotecas de jsPDF y jspdf-autotable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>

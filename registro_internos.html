@@ -21,17 +21,12 @@
     <script>
         // Verificar si el usuario está autenticado
         const loggedIn = localStorage.getItem('loggedIn');
-
         if (!loggedIn) {
             // Redirige a la página de inicio de sesión si no está autenticado
             window.location.href = 'index.html';
         }
     </script>
     <div class="container">
-        <h3 id="centroInternamientoHeader">Centro de Internamiento:</h3>
-        <!-- Campo de texto con valor por defecto editable -->
-        <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" required>
-
         <h2>Registro de Internos</h2>
         <form id="registroForm">
             <label for="fecha">Fecha:</label>
@@ -74,20 +69,16 @@
         <pre id="output" class="output"></pre>
     </div>
 
-    <!-- Importación de Firebase -->
+    <!-- Incluye las bibliotecas de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-analytics.js"></script>
-    <!-- TODO: Agrega otros SDKs de Firebase que necesites -->
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
 
     <script>
-        // Importar las funciones que necesitas de los SDKs que necesitas
-        import { initializeApp } from "firebase/app";
-        import { getAnalytics } from "firebase/analytics";
-
-        // Tu configuración de Firebase
+        // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD1d3Un7HltXCFk_WssjyYmZabH0JRxACM",
             authDomain: "dema-26548.firebaseapp.com",
+            databaseURL: "https://dema-26548-default-rtdb.firebaseio.com",
             projectId: "dema-26548",
             storageBucket: "dema-26548.appspot.com",
             messagingSenderId: "982226404755",
@@ -95,147 +86,192 @@
             measurementId: "G-VSBV5V5QWM"
         };
 
-        // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app); 
+        // Inicializa Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
+        // Función para sumar el total de presentes y excarcelados
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
             const presentes = parseInt(document.getElementById('presentes').value) || 0;
             document.getElementById('total').value = excarcelados + presentes;
         }
 
+        // Función para guardar el registro en Firebase
         function guardarRegistro() {
             const form = document.getElementById('registroForm');
             const formData = new FormData(form);
 
             let registro = {};
             formData.forEach((value, key) => {
-                if (key !== 'centroInternamiento') { // Excluyendo centroInternamiento
-                    registro[key] = value.toUpperCase();
-                }
+                registro[key] = value.toUpperCase();
             });
 
             const fecha = registro.fecha; // Extraemos la fecha del registro
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fecha] || [];
+            const registrosRef = database.ref('registros/' + fecha);
 
-            if (registros.length < 10) {
-                registros.push(registro);
-                registrosPorFecha[fecha] = registros;
-                localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-                actualizarFechasDisponibles();
-                mostrarRegistrosPorFecha();
-            } else {
-                alert('Se han alcanzado los 10 registros para esta fecha.');
-            }
+            registrosRef.once('value').then((snapshot) => {
+                const registros = snapshot.val() || [];
+
+                if (Object.keys(registros).length < 10) {
+                    registrosRef.push(registro, function(error) {
+                        if (error) {
+                            console.error("Error al guardar el registro:", error);
+                        } else {
+                            console.log("Registro guardado exitosamente en Firebase");
+                            actualizarFechasDisponibles();
+                            mostrarRegistrosPorFecha();
+                        }
+                    });
+                } else {
+                    alert('Se han alcanzado los 10 registros para esta fecha.');
+                }
+            });
         }
 
+        // Función para mostrar registros por fecha
         function mostrarRegistrosPorFecha() {
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fechaSeleccionada] || [];
-            const recordList = document.getElementById('recordList');
-            recordList.innerHTML = '';
+            const registrosRef = database.ref('registros/' + fechaSeleccionada);
 
-            registros.forEach((registro, index) => {
-                const registroText = document.createElement('div');
-                registroText.innerText = `${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivoOrdinario}`;
-                recordList.appendChild(registroText);
+            registrosRef.once('value', (snapshot) => {
+                const registros = snapshot.val() || [];
+                const recordList = document.getElementById('recordList');
+                recordList.innerHTML = '';
+
+                Object.keys(registros).forEach((key, index) => {
+                    const registro = registros[key];
+                    const registroText = document.createElement('div');
+                    registroText.innerText = `${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivoOrdinario}`;
+                    recordList.appendChild(registroText);
+                });
             });
         }
 
+        // Función para actualizar las fechas disponibles en el selector
         function actualizarFechasDisponibles() {
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            const fechaSeleccion = document.getElementById('fechaSeleccion');
-            fechaSeleccion.innerHTML = '';
+            const registrosRef = database.ref('registros');
+            registrosRef.once('value', (snapshot) => {
+                const registrosPorFecha = snapshot.val() || {};
+                const fechaSeleccion = document.getElementById('fechaSeleccion');
+                fechaSeleccion.innerHTML = '';
 
-            Object.keys(registrosPorFecha).forEach(fecha => {
-                const option = document.createElement('option');
-                option.value = fecha;
-                option.text = fecha;
-                fechaSeleccion.appendChild(option);
+                Object.keys(registrosPorFecha).forEach(fecha => {
+                    const option = document.createElement('option');
+                    option.value = fecha;
+                    option.text = fecha;
+                    fechaSeleccion.appendChild(option);
+                });
+
+                if (fechaSeleccion.options.length > 0) {
+                    fechaSeleccion.value = fechaSeleccion.options[fechaSeleccion.options.length - 1].value;
+                    mostrarRegistrosPorFecha();
+                }
             });
-
-            if (fechaSeleccion.options.length > 0) {
-                fechaSeleccion.value = fechaSeleccion.options[fechaSeleccion.options.length - 1].value;
-                mostrarRegistrosPorFecha();
-            }
         }
 
+        // Función para exportar registros a PDF
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fechaSeleccionada] || [];
+            const registrosRef = database.ref('registros/' + fechaSeleccionada);
 
-            if (registros.length === 0) {
-                alert('No hay registros para exportar.');
-                return;
-            }
+            registrosRef.once('value', (snapshot) => {
+                const registros = snapshot.val() || [];
+                if (Object.keys(registros).length === 0) {
+                    alert('No hay registros para exportar.');
+                    return;
+                }
 
-            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+                doc.setFontSize(18);
+                doc.text(`Registro de Internos del Día ${fechaSeleccionada}`, 20, 20);
 
-            doc.setFontSize(18);
-            doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, 20);
-            doc.text(`Registro de Internos del ${fechaSeleccionada}`, 20, 30);
-            doc.setFontSize(12);
+                const data = Object.values(registros).map(registro => [
+                    registro.fecha, 
+                    registro.hora, 
+                    registro.motivoOrdinario, 
+                    registro.motivoExtraordinario, 
+                    registro.excarcelados, 
+                    registro.presentes, 
+                    registro.total, 
+                    registro.custodioResponsable, 
+                    registro.personalDGRS
+                ]);
 
-            let startY = 40;
-            registros.forEach((registro, index) => {
-                let registroText = `${index + 1}. Fecha: ${registro.fecha} Hora: ${registro.hora} Motivo Ordinario: ${registro.motivoOrdinario} Motivo Extraordinario: ${registro.motivoExtraordinario} Excarcelados: ${registro.excarcelados} Presentes: ${registro.presentes} Total: ${registro.total} Custodio Responsable: ${registro.custodioResponsable} Personal DGRS: ${registro.personalDGRS}`;
-                doc.text(registroText, 20, startY);
-                startY += 10;
+                doc.autoTable({
+                    head: [['Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS']],
+                    body: data,
+                    startY: 30
+                });
+
+                doc.save(`Registro_Dia_${fechaSeleccionada}.pdf`);
             });
-
-            doc.save(`registro_internos_${fechaSeleccionada}.pdf`);
         }
 
+        // Función para exportar todos los registros a PDF
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            const registrosRef = database.ref('registros');
 
-            if (Object.keys(registrosPorFecha).length === 0) {
-                alert('No hay registros para exportar.');
-                return;
-            }
+            registrosRef.once('value', (snapshot) => {
+                const registrosPorFecha = snapshot.val() || {};
+                if (Object.keys(registrosPorFecha).length === 0) {
+                    alert('No hay registros para exportar.');
+                    return;
+                }
 
-            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+                doc.setFontSize(18);
+                doc.text('Registro Completo de Internos', 20, 20);
 
-            doc.setFontSize(18);
-            doc.text(`Centro de Internamiento: ${centroInternamiento}`, 20, 20);
-            doc.text('Registro Completo de Internos', 20, 30);
-            doc.setFontSize(12);
+                let startY = 30;
+                Object.keys(registrosPorFecha).forEach((fecha) => {
+                    const registros = Object.values(registrosPorFecha[fecha]);
+                    const data = registros.map(registro => [
+                        registro.fecha, 
+                        registro.hora, 
+                        registro.motivoOrdinario, 
+                        registro.motivoExtraordinario, 
+                        registro.excarcelados, 
+                        registro.presentes, 
+                        registro.total, 
+                        registro.custodioResponsable, 
+                        registro.personalDGRS
+                    ]);
 
-            let startY = 40;
-            for (let fecha in registrosPorFecha) {
-                let registros = registrosPorFecha[fecha];
-                doc.text(`Registros del ${fecha}:`, 20, startY);
-                startY += 10;
-                registros.forEach((registro, index) => {
-                    let registroText = `${index + 1}. Fecha: ${registro.fecha} Hora: ${registro.hora} Motivo Ordinario: ${registro.motivoOrdinario} Motivo Extraordinario: ${registro.motivoExtraordinario} Excarcelados: ${registro.excarcelados} Presentes: ${registro.presentes} Total: ${registro.total} Custodio Responsable: ${registro.custodioResponsable} Personal DGRS: ${registro.personalDGRS}`;
-                    doc.text(registroText, 20, startY);
-                    startY += 10;
+                    doc.text(`Fecha: ${fecha}`, 20, startY);
+                    doc.autoTable({
+                        head: [['Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS']],
+                        body: data,
+                        startY: startY + 10
+                    });
+
+                    startY += 60;
+                    if (startY > 180) {
+                        doc.addPage();
+                        startY = 30;
+                    }
                 });
-                startY += 10;
-            }
 
-            doc.save('registro_internos_completo.pdf');
+                doc.save('Registro_Completo.pdf');
+            });
         }
 
+        // Función para cerrar sesión
         function cerrarSesion() {
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
         }
 
-        window.onload = function() {
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
             actualizarFechasDisponibles();
-        }
+        });
     </script>
 
-    <!-- Agregar las bibliotecas de jsPDF y jspdf-autotable -->
+    <!-- jsPDF y jsPDF-AutoTable para exportar a PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>

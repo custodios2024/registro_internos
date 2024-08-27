@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -72,6 +73,7 @@
     <!-- Incluye las bibliotecas de Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"></script>
 
     <script>
         // Configuración de Firebase
@@ -88,7 +90,8 @@
 
         // Inicializa Firebase
         const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+        const database = firebase.database(app); // Inicializa Realtime Database
+        const db = firebase.firestore(app); // Inicializa Firestore
 
         // Función para sumar el total de presentes y excarcelados
         function sumarTotal() {
@@ -97,7 +100,7 @@
             document.getElementById('total').value = excarcelados + presentes;
         }
 
-        // Función para guardar el registro en Firebase
+        // Función para guardar el registro en Firebase Realtime Database
         function guardarRegistro() {
             const form = document.getElementById('registroForm');
             const formData = new FormData(form);
@@ -111,7 +114,7 @@
             const registrosRef = database.ref('registros/' + fecha);
 
             registrosRef.once('value').then((snapshot) => {
-                const registros = snapshot.val() || [];
+                const registros = snapshot.val() || {};
 
                 if (Object.keys(registros).length < 10) {
                     registrosRef.push(registro, function(error) {
@@ -135,7 +138,7 @@
             const registrosRef = database.ref('registros/' + fechaSeleccionada);
 
             registrosRef.once('value', (snapshot) => {
-                const registros = snapshot.val() || [];
+                const registros = snapshot.val() || {};
                 const recordList = document.getElementById('recordList');
                 recordList.innerHTML = '';
 
@@ -185,27 +188,17 @@
                 }
 
                 doc.setFontSize(18);
-                doc.text(`Registro de Internos del Día ${fechaSeleccionada}`, 20, 20);
+                doc.text(`Registro del ${fechaSeleccionada}`, 10, 10);
+                doc.setFontSize(12);
 
-                const data = Object.values(registros).map(registro => [
-                    registro.fecha, 
-                    registro.hora, 
-                    registro.motivoOrdinario, 
-                    registro.motivoExtraordinario, 
-                    registro.excarcelados, 
-                    registro.presentes, 
-                    registro.total, 
-                    registro.custodioResponsable, 
-                    registro.personalDGRS
-                ]);
-
-                doc.autoTable({
-                    head: [['Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS']],
-                    body: data,
-                    startY: 30
+                let y = 20;
+                Object.keys(registros).forEach((key, index) => {
+                    const registro = registros[key];
+                    doc.text(`${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivoOrdinario}`, 10, y);
+                    y += 10;
                 });
 
-                doc.save(`Registro_Dia_${fechaSeleccionada}.pdf`);
+                doc.save(`Registro_${fechaSeleccionada}.pdf`);
             });
         }
 
@@ -223,38 +216,25 @@
                 }
 
                 doc.setFontSize(18);
-                doc.text('Registro Completo de Internos', 20, 20);
+                doc.text(`Todos los Registros`, 10, 10);
+                doc.setFontSize(12);
 
-                let startY = 30;
+                let y = 20;
                 Object.keys(registrosPorFecha).forEach((fecha) => {
-                    const registros = Object.values(registrosPorFecha[fecha]);
-                    const data = registros.map(registro => [
-                        registro.fecha, 
-                        registro.hora, 
-                        registro.motivoOrdinario, 
-                        registro.motivoExtraordinario, 
-                        registro.excarcelados, 
-                        registro.presentes, 
-                        registro.total, 
-                        registro.custodioResponsable, 
-                        registro.personalDGRS
-                    ]);
+                    const registros = registrosPorFecha[fecha];
+                    doc.text(`Fecha: ${fecha}`, 10, y);
+                    y += 10;
 
-                    doc.text(`Fecha: ${fecha}`, 20, startY);
-                    doc.autoTable({
-                        head: [['Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS']],
-                        body: data,
-                        startY: startY + 10
+                    Object.keys(registros).forEach((key, index) => {
+                        const registro = registros[key];
+                        doc.text(`${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivoOrdinario}`, 10, y);
+                        y += 10;
                     });
 
-                    startY += 60;
-                    if (startY > 180) {
-                        doc.addPage();
-                        startY = 30;
-                    }
+                    y += 10;
                 });
 
-                doc.save('Registro_Completo.pdf');
+                doc.save(`Todos_Los_Registros.pdf`);
             });
         }
 
@@ -264,14 +244,8 @@
             window.location.href = 'index.html';
         }
 
-        // Inicializar al cargar la página
-        document.addEventListener('DOMContentLoaded', function() {
-            actualizarFechasDisponibles();
-        });
+        // Inicializa la actualización de fechas disponibles
+        actualizarFechasDisponibles();
     </script>
-
-    <!-- jsPDF y jsPDF-AutoTable para exportar a PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>

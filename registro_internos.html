@@ -8,7 +8,6 @@
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
         h2 { text-align: center; margin-top: 60px; }
-        h3 { text-align: center; margin-top: 20px; }
         label { font-weight: bold; }
         input, button, select { width: 100%; margin-bottom: 10px; padding: 10px; }
         .btn { background-color: #007bff; color: white; border: none; cursor: pointer; }
@@ -69,12 +68,14 @@
         <pre id="output" class="output"></pre>
     </div>
 
-    <!-- Incluye las bibliotecas de Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js"></script>
+    <!-- Importar módulos de Firebase JS SDK v9 -->
+    <script type="module">
+        // Importa las funciones necesarias de los módulos de Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
+        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
 
-    <script>
         // Configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD1d3Un7HltXCFk_WssjyYmZabH0JRxACM",
@@ -88,9 +89,10 @@
         };
 
         // Inicializa Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const database = firebase.database(app); // Inicializa Realtime Database
-        const db = firebase.firestore(app); // Inicializa Firestore
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
         // Función para sumar el total de presentes y excarcelados
         function sumarTotal() {
@@ -110,20 +112,18 @@
             });
 
             const fecha = registro.fecha; // Extraemos la fecha del registro
-            const registrosRef = database.ref('registros/' + fecha);
+            const registrosRef = ref(database, 'registros/' + fecha);
 
-            registrosRef.once('value').then((snapshot) => {
+            get(registrosRef).then((snapshot) => {
                 const registros = snapshot.val() || {};
 
                 if (Object.keys(registros).length < 10) {
-                    registrosRef.push(registro, function(error) {
-                        if (error) {
-                            console.error("Error al guardar el registro:", error);
-                        } else {
-                            console.log("Registro guardado exitosamente en Firebase");
-                            actualizarFechasDisponibles();
-                            mostrarRegistrosPorFecha();
-                        }
+                    push(registrosRef, registro).then(() => {
+                        console.log("Registro guardado exitosamente en Firebase");
+                        actualizarFechasDisponibles();
+                        mostrarRegistrosPorFecha();
+                    }).catch((error) => {
+                        console.error("Error al guardar el registro:", error);
                     });
                 } else {
                     alert('Se han alcanzado los 10 registros para esta fecha.');
@@ -134,9 +134,9 @@
         // Función para mostrar registros por fecha
         function mostrarRegistrosPorFecha() {
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            const registrosRef = database.ref('registros/' + fechaSeleccionada);
+            const registrosRef = ref(database, 'registros/' + fechaSeleccionada);
 
-            registrosRef.once('value', (snapshot) => {
+            get(registrosRef).then((snapshot) => {
                 const registros = snapshot.val() || {};
                 const recordList = document.getElementById('recordList');
                 recordList.innerHTML = '';
@@ -152,8 +152,8 @@
 
         // Función para actualizar las fechas disponibles en el selector
         function actualizarFechasDisponibles() {
-            const registrosRef = database.ref('registros');
-            registrosRef.once('value', (snapshot) => {
+            const registrosRef = ref(database, 'registros');
+            get(registrosRef).then((snapshot) => {
                 const registrosPorFecha = snapshot.val() || {};
                 const fechaSeleccion = document.getElementById('fechaSeleccion');
                 fechaSeleccion.innerHTML = '';
@@ -177,9 +177,9 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            const registrosRef = database.ref('registros/' + fechaSeleccionada);
+            const registrosRef = ref(database, 'registros/' + fechaSeleccionada);
 
-            registrosRef.once('value', (snapshot) => {
+            get(registrosRef).then((snapshot) => {
                 const registros = snapshot.val() || [];
                 if (Object.keys(registros).length === 0) {
                     alert('No hay registros para exportar.');
@@ -187,17 +187,22 @@
                 }
 
                 doc.setFontSize(18);
-                doc.text(`Registro del ${fechaSeleccionada}`, 10, 10);
+                doc.text(`Registro del ${fechaSeleccionada}`, 14, 20);
                 doc.setFontSize(12);
+                doc.text('No. | Fecha | Hora | Motivo Ordinario | Motivo Extraordinario | Excarcelados | Presentes | Total | Custodio Responsable | Personal D.G.R.S.', 14, 30);
+                doc.text('----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 14, 40);
 
-                let y = 20;
+                let y = 50;
                 Object.keys(registros).forEach((key, index) => {
                     const registro = registros[key];
-                    doc.text(`${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivoOrdinario}`, 10, y);
+                    const line = `${index + 1}. ${registro.fecha} ${registro.hora} ${registro.motivoOrdinario} ${registro.motivoExtraordinario} ${registro.excarcelados} ${registro.presentes} ${registro.total} ${registro.custodioResponsable} ${registro.personalDGRS}`;
+                    doc.text(line, 14, y);
                     y += 10;
                 });
 
                 doc.save(`Registro_${fechaSeleccionada}.pdf`);
+            }).catch((error) => {
+                console.error("Error al obtener los registros:", error);
             });
         }
 
@@ -205,9 +210,9 @@
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
-            const registrosRef = database.ref('registros');
+            const registrosRef = ref(database, 'registros');
 
-            registrosRef.once('value', (snapshot) => {
+            get(registrosRef).then((snapshot) => {
                 const registrosPorFecha = snapshot.val() || {};
                 if (Object.keys(registrosPorFecha).length === 0) {
                     alert('No hay registros para exportar.');
@@ -215,25 +220,25 @@
                 }
 
                 doc.setFontSize(18);
-                doc.text(`Todos los Registros`, 10, 10);
+                doc.text('Registro Completo', 14, 20);
                 doc.setFontSize(12);
+                doc.text('Fecha | Hora | Motivo Ordinario | Motivo Extraordinario | Excarcelados | Presentes | Total | Custodio Responsable | Personal D.G.R.S.', 14, 30);
+                doc.text('----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 14, 40);
 
-                let y = 20;
-                Object.keys(registrosPorFecha).forEach((fecha) => {
+                let y = 50;
+                Object.keys(registrosPorFecha).forEach(fecha => {
                     const registros = registrosPorFecha[fecha];
-                    doc.text(`Fecha: ${fecha}`, 10, y);
-                    y += 10;
-
                     Object.keys(registros).forEach((key, index) => {
                         const registro = registros[key];
-                        doc.text(`${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivoOrdinario}`, 10, y);
+                        const line = `${registro.fecha} ${registro.hora} ${registro.motivoOrdinario} ${registro.motivoExtraordinario} ${registro.excarcelados} ${registro.presentes} ${registro.total} ${registro.custodioResponsable} ${registro.personalDGRS}`;
+                        doc.text(line, 14, y);
                         y += 10;
                     });
-
-                    y += 10;
                 });
 
-                doc.save(`Todos_Los_Registros.pdf`);
+                doc.save('Registro_Completo.pdf');
+            }).catch((error) => {
+                console.error("Error al obtener los registros:", error);
             });
         }
 
@@ -243,8 +248,12 @@
             window.location.href = 'index.html';
         }
 
-        // Inicializa la actualización de fechas disponibles
-        actualizarFechasDisponibles();
+        // Inicializar las fechas disponibles al cargar la página
+        window.onload = actualizarFechasDisponibles;
     </script>
+    <!-- Importar jsPDF desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
+
+

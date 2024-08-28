@@ -27,7 +27,7 @@
     </script>
     <div class="container">
         <h2>Registro de Internos</h2>
-        <form id="registroForm">
+        <form id="registroForm" method="POST" action="guardar_registro.php">
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
 
@@ -55,7 +55,7 @@
             <label for="personalDGRS">Personal de la D.G.R.S.:</label>
             <input type="text" id="personalDGRS" name="personalDGRS" required>
 
-            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
+            <button type="submit" class="btn">Guardar</button>
             <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
             <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
@@ -68,32 +68,7 @@
         <pre id="output" class="output"></pre>
     </div>
 
-    <!-- Importar módulos de Firebase JS SDK v9 -->
-    <script type="module">
-        // Importa las funciones necesarias de los módulos de Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-app.js";
-        import { getDatabase, ref, push, get } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-database.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/9.15.0/firebase-auth.js";
-
-        // Configuración de Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyD1d3Un7HltXCFk_WssjyYmZabH0JRxACM",
-            authDomain: "dema-26548.firebaseapp.com",
-            databaseURL: "https://dema-26548-default-rtdb.firebaseio.com",
-            projectId: "dema-26548",
-            storageBucket: "dema-26548.appspot.com",
-            messagingSenderId: "982226404755",
-            appId: "1:982226404755:web:54430def1cc9550e835466",
-            measurementId: "G-VSBV5V5QWM"
-        };
-
-        // Inicializa Firebase
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
+    <script>
         // Función para sumar el total de presentes y excarcelados
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
@@ -101,145 +76,31 @@
             document.getElementById('total').value = excarcelados + presentes;
         }
 
-        // Función para guardar el registro en Firebase Realtime Database
-        function guardarRegistro() {
-            const form = document.getElementById('registroForm');
-            const formData = new FormData(form);
-
-            let registro = {};
-            formData.forEach((value, key) => {
-                registro[key] = value.toUpperCase();
-            });
-
-            const fecha = registro.fecha; // Extraemos la fecha del registro
-            const registrosRef = ref(database, 'registros/' + fecha);
-
-            get(registrosRef).then((snapshot) => {
-                const registros = snapshot.val() || {};
-
-                if (Object.keys(registros).length < 10) {
-                    push(registrosRef, registro).then(() => {
-                        console.log("Registro guardado exitosamente en Firebase");
-                        actualizarFechasDisponibles();
-                        mostrarRegistrosPorFecha();
-                    }).catch((error) => {
-                        console.error("Error al guardar el registro:", error);
-                    });
-                } else {
-                    alert('Se han alcanzado los 10 registros para esta fecha.');
-                }
-            });
-        }
-
-        // Función para mostrar registros por fecha
-        function mostrarRegistrosPorFecha() {
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            const registrosRef = ref(database, 'registros/' + fechaSeleccionada);
-
-            get(registrosRef).then((snapshot) => {
-                const registros = snapshot.val() || {};
-                const recordList = document.getElementById('recordList');
-                recordList.innerHTML = '';
-
-                Object.keys(registros).forEach((key, index) => {
-                    const registro = registros[key];
-                    const registroText = document.createElement('div');
-                    registroText.innerText = `${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivoOrdinario}`;
-                    recordList.appendChild(registroText);
-                });
-            });
-        }
-
-        // Función para actualizar las fechas disponibles en el selector
-        function actualizarFechasDisponibles() {
-            const registrosRef = ref(database, 'registros');
-            get(registrosRef).then((snapshot) => {
-                const registrosPorFecha = snapshot.val() || {};
-                const fechaSeleccion = document.getElementById('fechaSeleccion');
-                fechaSeleccion.innerHTML = '';
-
-                Object.keys(registrosPorFecha).forEach(fecha => {
-                    const option = document.createElement('option');
-                    option.value = fecha;
-                    option.text = fecha;
-                    fechaSeleccion.appendChild(option);
-                });
-
-                if (fechaSeleccion.options.length > 0) {
-                    fechaSeleccion.value = fechaSeleccion.options[fechaSeleccion.options.length - 1].value;
-                    mostrarRegistrosPorFecha();
-                }
-            });
-        }
-
         // Función para exportar registros a PDF
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            const registrosRef = ref(database, 'registros/' + fechaSeleccionada);
 
-            get(registrosRef).then((snapshot) => {
-                const registros = snapshot.val() || [];
-                if (Object.keys(registros).length === 0) {
-                    alert('No hay registros para exportar.');
-                    return;
-                }
-
-                doc.setFontSize(18);
-                doc.text(`Registro del ${fechaSeleccionada}`, 14, 20);
-                doc.setFontSize(12);
-                doc.text('No. | Fecha | Hora | Motivo Ordinario | Motivo Extraordinario | Excarcelados | Presentes | Total | Custodio Responsable | Personal D.G.R.S.', 14, 30);
-                doc.text('----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 14, 40);
-
-                let y = 50;
-                Object.keys(registros).forEach((key, index) => {
-                    const registro = registros[key];
-                    const line = `${index + 1}. ${registro.fecha} ${registro.hora} ${registro.motivoOrdinario} ${registro.motivoExtraordinario} ${registro.excarcelados} ${registro.presentes} ${registro.total} ${registro.custodioResponsable} ${registro.personalDGRS}`;
-                    doc.text(line, 14, y);
-                    y += 10;
-                });
-
-                doc.save(`Registro_${fechaSeleccionada}.pdf`);
-            }).catch((error) => {
-                console.error("Error al obtener los registros:", error);
-            });
+            // Aquí se incluiría la lógica para obtener los registros desde MySQL y exportarlos a PDF
+            // Ejemplo de estructura básica:
+            doc.setFontSize(18);
+            doc.text(`Registro del ${fechaSeleccionada}`, 14, 20);
+            // Añadir más detalles del registro aquí
+            doc.save(`Registro_${fechaSeleccionada}.pdf`);
         }
 
         // Función para exportar todos los registros a PDF
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
-            const registrosRef = ref(database, 'registros');
 
-            get(registrosRef).then((snapshot) => {
-                const registrosPorFecha = snapshot.val() || {};
-                if (Object.keys(registrosPorFecha).length === 0) {
-                    alert('No hay registros para exportar.');
-                    return;
-                }
-
-                doc.setFontSize(18);
-                doc.text('Registro Completo', 14, 20);
-                doc.setFontSize(12);
-                doc.text('Fecha | Hora | Motivo Ordinario | Motivo Extraordinario | Excarcelados | Presentes | Total | Custodio Responsable | Personal D.G.R.S.', 14, 30);
-                doc.text('----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------', 14, 40);
-
-                let y = 50;
-                Object.keys(registrosPorFecha).forEach(fecha => {
-                    const registros = registrosPorFecha[fecha];
-                    Object.keys(registros).forEach((key, index) => {
-                        const registro = registros[key];
-                        const line = `${registro.fecha} ${registro.hora} ${registro.motivoOrdinario} ${registro.motivoExtraordinario} ${registro.excarcelados} ${registro.presentes} ${registro.total} ${registro.custodioResponsable} ${registro.personalDGRS}`;
-                        doc.text(line, 14, y);
-                        y += 10;
-                    });
-                });
-
-                doc.save('Registro_Completo.pdf');
-            }).catch((error) => {
-                console.error("Error al obtener los registros:", error);
-            });
+            // Aquí se incluiría la lógica para obtener todos los registros desde MySQL y exportarlos a PDF
+            // Ejemplo de estructura básica:
+            doc.setFontSize(18);
+            doc.text('Registro Completo', 14, 20);
+            // Añadir más detalles del registro aquí
+            doc.save('Registro_Completo.pdf');
         }
 
         // Función para cerrar sesión
@@ -248,12 +109,15 @@
             window.location.href = 'index.html';
         }
 
-        // Inicializar las fechas disponibles al cargar la página
-        window.onload = actualizarFechasDisponibles;
+        // Función para mostrar registros por fecha (deberás implementar esta lógica en PHP y MySQL)
+        function mostrarRegistrosPorFecha() {
+            // Lógica para mostrar registros desde MySQL
+        }
     </script>
     <!-- Importar jsPDF desde CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
+
 
 

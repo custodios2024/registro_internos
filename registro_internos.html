@@ -3,17 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Internos</title>
+    <title>Registro interno</title>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
-        h2 { text-align: center; margin-top: 60px; }
-        label { font-weight: bold; }
-        input, button, select { width: 100%; margin-bottom: 10px; padding: 10px; }
-        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; }
-        .btn:hover { background-color: #0056b3; }
-        .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
-        .record-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 60px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, button, select {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .record-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
@@ -21,7 +57,7 @@
         // Verificar si el usuario está autenticado
         const loggedIn = localStorage.getItem('loggedIn');
         if (!loggedIn) {
-            // Redirige a la página de inicio de sesión si no está autenticado
+            // Redirigir a la página de inicio de sesión si no está autenticado
             window.location.href = 'index.html';
         }
     </script>
@@ -30,35 +66,26 @@
         <form id="registroForm" method="POST" action="guardar_registro.php">
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
-
             <label for="hora">Hora:</label>
             <input type="time" id="hora" name="hora" required>
-
             <label for="motivoOrdinario">Motivo Ordinario:</label>
             <input type="text" id="motivoOrdinario" name="motivoOrdinario" required>
-
             <label for="motivoExtraordinario">Motivo Extraordinario:</label>
             <input type="text" id="motivoExtraordinario" name="motivoExtraordinario" required>
-
             <label for="excarcelados">Excarcelados:</label>
             <input type="number" id="excarcelados" name="excarcelados" required>
-
             <label for="presentes">Presentes:</label>
             <input type="number" id="presentes" name="presentes" required oninput="sumarTotal()">
-
             <label for="total">Total:</label>
             <input type="number" id="total" name="total" required readonly>
-
             <label for="custodioResponsable">Custodio Responsable:</label>
             <input type="text" id="custodioResponsable" name="custodioResponsable" required>
-
-            <label for="personalDGRS">Personal de la D.G.R.S.:</label>
+            <label for="personalDGRS">Personal de la DGRS:</label>
             <input type="text" id="personalDGRS" name="personalDGRS" required>
-
             <button type="submit" class="btn">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
-            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
-            <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
+            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del día</button>
+            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF completo</button>
+            <button type="button" class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
         </form>
         <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
         <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()">
@@ -67,7 +94,6 @@
         <div class="record-list" id="recordList"></div>
         <pre id="output" class="output"></pre>
     </div>
-
     <script>
         // Función para sumar el total de presentes y excarcelados
         function sumarTotal() {
@@ -81,7 +107,6 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-
             // Aquí se incluiría la lógica para obtener los registros desde MySQL y exportarlos a PDF
             // Ejemplo de estructura básica:
             doc.setFontSize(18);
@@ -94,7 +119,6 @@
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
-
             // Aquí se incluiría la lógica para obtener todos los registros desde MySQL y exportarlos a PDF
             // Ejemplo de estructura básica:
             doc.setFontSize(18);
@@ -104,7 +128,7 @@
         }
 
         // Función para cerrar sesión
-        function cerrarSesion() { 
+        function cerrarSesion() {
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
         }
@@ -118,6 +142,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
+
 
 
 

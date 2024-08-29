@@ -128,18 +128,18 @@ async function exportarPDF() {
 
     // Establecer el formato de la tabla
     doc.setFontSize(10);
-    const startY = 50;
+    const startY = 60;
     let y = startY;
     const columnWidth = [25, 20, 40, 25, 25, 20, 40, 40];
     const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS'];
-
+    
     // Añadir encabezados
     headers.forEach((header, i) => {
         doc.text(header, 10 + i * columnWidth[i], y);
     });
 
     y += 10;
-
+    
     // Añadir datos de la tabla
     registrosFiltrados.forEach(record => {
         Object.values(record).forEach((value, i) => {
@@ -162,7 +162,7 @@ async function exportarPDFCompleto() {
 
     const doc = new jsPDF('landscape');
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
-
+    
     if (registros.length === 0) {
         alert('No hay registros para exportar.');
         return;
@@ -179,7 +179,7 @@ async function exportarPDFCompleto() {
 
     // Establecer el formato de la tabla
     doc.setFontSize(10);
-    const startY = 50;
+    const startY = 60;
     let y = startY;
     const columnWidth = [25, 20, 40, 25, 25, 20, 40, 40];
     const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS'];
@@ -190,7 +190,7 @@ async function exportarPDFCompleto() {
     });
 
     y += 10;
-
+    
     // Añadir datos de la tabla
     registros.forEach(record => {
         Object.values(record).forEach((value, i) => {

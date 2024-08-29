@@ -4,50 +4,52 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Internos</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Asegúrate de tener este archivo -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <script>
-        // Verificar si el usuario está autenticado
-        const loggedIn = localStorage.getItem('loggedIn');
-        if (!loggedIn) {
-            window.location.href = 'index.html'; // Redirigir a la página de inicio de sesión
-        }
-    </script>
     <div class="container">
         <img src="logo_sspc1.png" alt="Logo SSPC" class="logo">
         <h2>Registro de Internos</h2>
-        <form id="registroForm">
+        <form id="registroForm" onsubmit="guardarRegistro(); return false;">
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
+            
             <label for="hora">Hora:</label>
             <input type="time" id="hora" name="hora" required>
+            
             <label for="motivo">Motivo:</label>
             <input type="text" id="motivo" name="motivo" required>
+            
             <label for="excarcelados">Excarcelados:</label>
             <input type="number" id="excarcelados" name="excarcelados" required>
+            
             <label for="presentes">Presentes:</label>
             <input type="number" id="presentes" name="presentes" required oninput="sumarTotal()">
+            
             <label for="total">Total:</label>
             <input type="number" id="total" name="total" required readonly>
+            
             <label for="custodioResponsable">Custodio Responsable:</label>
             <input type="text" id="custodioResponsable" name="custodioResponsable" required>
+            
             <label for="personalDGRS">Personal de la DGRS:</label>
             <input type="text" id="personalDGRS" name="personalDGRS" required>
-            <label for="centroInternamiento">Centro de Internamiento:</label>
-            <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES">
+            
             <button type="submit" class="btn">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
-            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
+            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del día</button>
+            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF completo</button>
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
         </form>
+        
         <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
         <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()">
             <!-- Fechas se agregarán dinámicamente aquí -->
         </select>
+        
         <div class="record-list" id="recordList"></div>
+        
         <pre id="output" class="output"></pre>
     </div>
-    <script src="scripts.js"></script> <!-- Incluye el script de JavaScript -->
+    <script src="scripts.js"></script>
 </body>
 </html>

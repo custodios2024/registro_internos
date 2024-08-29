@@ -99,6 +99,7 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.20/jspdf.plugin.autotable.min.js"></script>
     <script>
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
@@ -148,11 +149,27 @@
                 }
             }
 
+            // Definir columnas y filas para el autoTable
+            const columns = ["Centro", "Fecha", "Hora", "Motivo", "Excarcelados", "Presentes", "Total", "Custodio Responsable", "Personal DGRS"];
+            const rows = registros.map(registro => [
+                registro.centro,
+                registro.fecha,
+                registro.hora,
+                registro.motivo,
+                registro.excarcelados,
+                registro.presentes,
+                registro.total,
+                registro.custodioResponsable,
+                registro.personalDGRS
+            ]);
+
             doc.setFontSize(18);
             doc.text(`Registro del ${fechaSeleccionada}`, 14, 20);
             
-            registros.forEach((registro, index) => {
-                doc.text(`Registro ${index + 1}: ${JSON.stringify(registro)}`, 14, 30 + (index * 10));
+            doc.autoTable({
+                head: [columns],
+                body: rows,
+                startY: 30
             });
 
             doc.save(`Registro_${fechaSeleccionada}.pdf`);
@@ -171,25 +188,36 @@
                 }
             }
 
+            // Definir columnas y filas para el autoTable
+            const columns = ["Centro", "Fecha", "Hora", "Motivo", "Excarcelados", "Presentes", "Total", "Custodio Responsable", "Personal DGRS"];
+            const rows = registros.map(registro => [
+                registro.centro,
+                registro.fecha,
+                registro.hora,
+                registro.motivo,
+                registro.excarcelados,
+                registro.presentes,
+                registro.total,
+                registro.custodioResponsable,
+                registro.personalDGRS
+            ]);
+
             doc.setFontSize(18);
             doc.text('Registro Completo', 14, 20);
             
-            registros.forEach((registro, index) => {
-                doc.text(`Registro ${index + 1}: ${JSON.stringify(registro)}`, 14, 30 + (index * 10));
+            doc.autoTable({
+                head: [columns],
+                body: rows,
+                startY: 30
             });
 
             doc.save('Registro_Completo.pdf');
         }
 
-        function cerrarSesion() {
-            localStorage.removeItem('loggedIn');
-            window.location.href = 'index.html';
-        }
-
         function mostrarRegistrosPorFecha() {
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
             const recordList = document.getElementById('recordList');
-            recordList.innerHTML = '';
+            recordList.innerHTML = ''; // Limpiar la lista antes de mostrar los nuevos registros
 
             for (let i = 0; i < localStorage.length; i++) {
                 let key = localStorage.key(i);
@@ -200,11 +228,15 @@
             }
         }
 
+        function cerrarSesion() {
+            localStorage.removeItem('loggedIn');
+            location.reload();
+        }
+
         function login() {
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
 
-            // Verificar credenciales (puedes cambiar esto por un método más seguro)
             if (username === 'admin' && password === 'admin') {
                 localStorage.setItem('loggedIn', 'true');
                 mostrarRegistro();

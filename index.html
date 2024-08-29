@@ -58,8 +58,21 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="logo_sspc.png" alt="Logo SSPC" class="logo"> <!-- Logo SSPC -->
+    <!-- Contenedor de inicio de sesión -->
+    <div class="container" id="loginContainer">
+        <h2>Iniciar sesión</h2>
+        <form id="loginForm">
+            <label for="usuario">Usuario:</label>
+            <input type="text" id="usuario" required>
+            <label for="contraseña">Contraseña:</label>
+            <input type="password" id="contraseña" required>
+            <button type="button" class="btn" onclick="iniciarSesion()">Iniciar sesión</button>
+        </form>
+    </div>
+
+    <!-- Contenedor del registro -->
+    <div class="container" id="registroContainer" style="display:none;">
+        <img src="logo_sspc1.png" alt="Logo SSPC" class="logo"> <!-- Logo SSPC -->
         <h2>Registro de Internos</h2>
         <form id="registroForm" method="POST" action="guardar_registro.php">
             <label for="fecha">Fecha:</label>
@@ -84,11 +97,39 @@
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
         </form>
         <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"> <!-- Fechas se agregarán dinámicamente aquí --> </select>
+        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"></select>
         <div class="record-list" id="recordList"></div>
         <pre id="output" class="output"></pre>
     </div>
+    
     <script>
+        function iniciarSesion() {
+            const usuario = document.getElementById('usuario').value;
+            const contraseña = document.getElementById('contraseña').value;
+            const usuarioCorrecto = 'admin';
+            const contraseñaCorrecta = 'admin';
+
+            if (usuario === usuarioCorrecto && contraseña === contraseñaCorrecta) {
+                localStorage.setItem('sessionActive', 'true');
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('registroContainer').style.display = 'block';
+            } else {
+                alert('Usuario o contraseña incorrectos');
+            }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('sessionActive');
+            location.reload();
+        }
+
+        function verificarSesion() {
+            if (localStorage.getItem('sessionActive') === 'true') {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('registroContainer').style.display = 'block';
+            }
+        }
+
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
             const presentes = parseInt(document.getElementById('presentes').value) || 0;
@@ -127,8 +168,8 @@
                 body: registros,
                 startY: 30,
                 theme: 'grid',
-                headStyles: { fillColor: [0, 123, 255] },  // Azul celeste para encabezados
-                styles: { fontSize: 10, lineHeight: 1.5 }  // Interlineado 1.5
+                headStyles: { fillColor: [0, 123, 255] },
+                styles: { fontSize: 10, lineHeight: 1.5 }
             });
 
             doc.save(`Registro_${fechaSeleccionada}.pdf`);
@@ -165,23 +206,11 @@
                 body: registros,
                 startY: 30,
                 theme: 'grid',
-                headStyles: { fillColor: [0, 123, 255] },  // Azul celeste para encabezados
-                styles: { fontSize: 10, lineHeight: 1.5 }  // Interlineado 1.5
+                headStyles: { fillColor: [0, 123, 255] },
+                styles: { fontSize: 10, lineHeight: 1.5 }
             });
 
             doc.save('Registro_Completo.pdf');
-        }
-
-        function cerrarSesion() {
-            localStorage.removeItem('sessionActive');
-            location.reload();
-        }
-
-        function verificarSesion() {
-            if (localStorage.getItem('sessionActive') === 'true') {
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('registroContainer').style.display = 'block';
-            }
         }
 
         window.onload = verificarSesion;

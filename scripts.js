@@ -117,9 +117,6 @@ async function exportarPDF() {
         return;
     }
 
-    // Añadir el logo en el encabezado
-    doc.addImage('logo_sspc2.png', 'PNG', 10, 10, 30, 15); // Ajusta las coordenadas y el tamaño según sea necesario
-
     // Añadir título
     doc.setFontSize(18);
     doc.text('Centro de Internamiento:', 50, 15);
@@ -138,7 +135,7 @@ async function exportarPDF() {
     
     // Añadir encabezados
     headers.forEach((header, i) => {
-        doc.text(header, 10 + i * columnWidth[i], y);
+        doc.text(header, 10 + columnWidth.slice(0, i).reduce((a, b) => a + b, 0), y);
     });
 
     y += 10;
@@ -147,7 +144,7 @@ async function exportarPDF() {
     registrosFiltrados.forEach(record => {
         Object.values(record).forEach((value, i) => {
             const textValue = value ? value.toString() : ''; // Asegura que el valor no sea undefined o null
-            doc.text(textValue, 10 + i * columnWidth[i], y);
+            doc.text(textValue, 10 + columnWidth.slice(0, i).reduce((a, b) => a + b, 0), y);
         });
         y += 10;
     });
@@ -172,9 +169,6 @@ async function exportarPDFCompleto() {
         return;
     }
 
-    // Añadir el logo en el encabezado
-    doc.addImage('logo_sspc2.png', 'PNG', 10, 10, 30, 15); // Ajusta las coordenadas y el tamaño según sea necesario
-
     // Añadir título
     doc.setFontSize(18);
     doc.text('Centro de Internamiento:', 50, 15);
@@ -193,7 +187,7 @@ async function exportarPDFCompleto() {
     
     // Añadir encabezados
     headers.forEach((header, i) => {
-        doc.text(header, 10 + i * columnWidth[i], y);
+        doc.text(header, 10 + columnWidth.slice(0, i).reduce((a, b) => a + b, 0), y);
     });
 
     y += 10;
@@ -202,7 +196,7 @@ async function exportarPDFCompleto() {
     registros.forEach(record => {
         Object.values(record).forEach((value, i) => {
             const textValue = value ? value.toString() : ''; // Asegura que el valor no sea undefined o null
-            doc.text(textValue, 10 + i * columnWidth[i], y);
+            doc.text(textValue, 10 + columnWidth.slice(0, i).reduce((a, b) => a + b, 0), y);
         });
         y += 10;
     });

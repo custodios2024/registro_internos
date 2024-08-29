@@ -99,10 +99,15 @@ function mostrarRegistrosPorFecha() {
 }
 
 // Función para exportar los registros a PDF
-function exportarPDF() {
+async function exportarPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape');
 
+    if (!jsPDF) {
+        alert('jsPDF no está cargado correctamente.');
+        return;
+    }
+
+    const doc = new jsPDF('landscape');
     const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
     const registrosFiltrados = registros.filter(registro => registro.fecha === fechaSeleccionada);
@@ -138,7 +143,7 @@ function exportarPDF() {
 
     y += 10;
     
-    // Añadir filas de registros
+    // Añadir datos de la tabla
     registrosFiltrados.forEach(record => {
         Object.values(record).forEach((value, i) => {
             doc.text(value.toString(), 10 + i * columnWidth[i], y);
@@ -150,10 +155,15 @@ function exportarPDF() {
 }
 
 // Función para exportar todos los registros a PDF
-function exportarPDFCompleto() {
+async function exportarPDFCompleto() {
     const { jsPDF } = window.jspdf;
+
+    if (!jsPDF) {
+        alert('jsPDF no está cargado correctamente.');
+        return;
+    }
+
     const doc = new jsPDF('landscape');
-    
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
     
     if (registros.length === 0) {
@@ -187,7 +197,7 @@ function exportarPDFCompleto() {
 
     y += 10;
     
-    // Añadir filas de registros
+    // Añadir datos de la tabla
     registros.forEach(record => {
         Object.values(record).forEach((value, i) => {
             doc.text(value.toString(), 10 + i * columnWidth[i], y);
@@ -201,17 +211,16 @@ function exportarPDFCompleto() {
 // Función para cerrar sesión
 function cerrarSesion() {
     localStorage.removeItem('loggedIn');
-    window.location.href = 'index.html'; // Redirige a la página de inicio de sesión
+    window.location.href = 'index.html';
 }
 
-// Llenar el selector de fechas
-function llenarSelectorFechas() {
-    const fechas = JSON.parse(localStorage.getItem('registros'))?.map(registro => registro.fecha) || [];
-    const fechasUnicas = [...new Set(fechas)];
-    
+// Inicializa la lista de fechas en el select
+function inicializarFechas() {
+    const registros = JSON.parse(localStorage.getItem('registros')) || [];
+    const fechas = [...new Set(registros.map(registro => registro.fecha))];
     const fechaSeleccion = document.getElementById('fechaSeleccion');
-    fechaSeleccion.innerHTML = '<option value="">Selecciona una fecha</option>';
-    fechasUnicas.forEach(fecha => {
+
+    fechas.forEach(fecha => {
         const option = document.createElement('option');
         option.value = fecha;
         option.textContent = fecha;
@@ -219,9 +228,5 @@ function llenarSelectorFechas() {
     });
 }
 
-// Llamada inicial para llenar el selector de fechas
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.location.pathname.includes('registro_internos.html')) {
-        llenarSelectorFechas();
-    }
-});
+// Llama a inicializarFechas al cargar la página
+window.onload = inicializarFechas;

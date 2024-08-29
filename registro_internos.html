@@ -3,61 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Internos</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
-        .container {
-            max-width: 500px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        h2 {
-            text-align: center;
-            margin-top: 20px;
-        }
-        label {
-            font-weight: bold;
-        }
-        input, button, select {
-            width: 100%;
-            margin-bottom: 10px;
-            padding: 10px;
-        }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        .btn:hover {
-            background-color: #0056b3;
-        }
-        .output {
-            white-space: pre-wrap;
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .record-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            margin-top: 20px;
-            padding: 10px;
-        }
-    </style>
+    <title>Registro Interno</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <script>
+        // Verificar si el usuario está autenticado
+        const loggedIn = localStorage.getItem('loggedIn');
+        if (!loggedIn) {
+            // Redirigir a la página de inicio de sesión si no está autenticado
+            window.location.href = 'index.html';
+        }
+    </script>
     <div class="container">
+        <img src="logo_sspc1.png" alt="Logo SSPC" class="logo">
         <h2>Registro de Internos</h2>
-        <form id="registroForm">
-            <label for="centro">Centro de Internamiento:</label>
-            <input type="text" id="centro" name="centro" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES">
+        <form id="registroForm" method="POST">
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
             <label for="hora">Hora:</label>
@@ -74,7 +35,7 @@
             <input type="text" id="custodioResponsable" name="custodioResponsable" required>
             <label for="personalDGRS">Personal de la DGRS:</label>
             <input type="text" id="personalDGRS" name="personalDGRS" required>
-            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
+            <button type="submit" class="btn">Guardar</button>
             <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del día</button>
             <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF completo</button>
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
@@ -86,81 +47,8 @@
         <div class="record-list" id="recordList"></div>
         <pre id="output" class="output"></pre>
     </div>
-
+    <script src="scripts.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script>
-        function sumarTotal() {
-            const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
-            const presentes = parseInt(document.getElementById('presentes').value) || 0;
-            document.getElementById('total').value = excarcelados + presentes;
-        }
-
-        function guardarRegistro() {
-            // Obtener valores del formulario
-            const registro = {
-                centro: document.getElementById('centro').value,
-                fecha: document.getElementById('fecha').value,
-                hora: document.getElementById('hora').value,
-                motivo: document.getElementById('motivo').value,
-                excarcelados: document.getElementById('excarcelados').value,
-                presentes: document.getElementById('presentes').value,
-                total: document.getElementById('total').value,
-                custodioResponsable: document.getElementById('custodioResponsable').value,
-                personalDGRS: document.getElementById('personalDGRS').value
-            };
-
-            // Guardar registro en localStorage o enviar a backend
-            localStorage.setItem('registro_' + registro.fecha + '_' + registro.hora, JSON.stringify(registro));
-            alert('Registro guardado exitosamente.');
-        }
-
-        function exportarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('landscape');
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-
-            // Aquí se incluiría la lógica para obtener los registros y exportarlos a PDF
-            doc.setFontSize(18);
-            doc.text(`Registro del ${fechaSeleccionada}`, 14, 20);
-
-            // Ejemplo de guardado del PDF
-            doc.save(`Registro_${fechaSeleccionada}.pdf`);
-        }
-
-        function exportarPDFCompleto() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('landscape');
-
-            // Aquí se incluiría la lógica para obtener todos los registros y exportarlos a PDF
-            doc.setFontSize(18);
-            doc.text('Registro Completo', 14, 20);
-
-            // Ejemplo de guardado del PDF
-            doc.save('Registro_Completo.pdf');
-        }
-
-        function cerrarSesion() {
-            localStorage.removeItem('loggedIn');
-            window.location.href = 'index.html';
-        }
-
-        function mostrarRegistrosPorFecha() {
-            // Lógica para mostrar registros basados en la fecha seleccionada
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Cargar fechas de registros del localStorage y agregarlas al selector
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
-                if (key.startsWith('registro_')) {
-                    let registro = JSON.parse(localStorage.getItem(key));
-                    let option = document.createElement('option');
-                    option.value = registro.fecha;
-                    option.text = registro.fecha;
-                    document.getElementById('fechaSeleccion').appendChild(option);
-                }
-            }
-        });
-    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.16/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>

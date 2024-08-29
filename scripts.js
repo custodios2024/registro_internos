@@ -230,3 +230,4 @@ function inicializarFechas() {
 
 // Llama a inicializarFechas al cargar la página
 window.onload = inicializarFechas;
+

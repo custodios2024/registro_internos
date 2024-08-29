@@ -22,6 +22,7 @@ function guardarRegistro() {
     const total = excarcelados + presentes;
     const custodioResponsable = document.getElementById('custodioResponsable').value;
     const personalDGRS = document.getElementById('personalDGRS').value;
+    const centroInternamiento = document.getElementById('centroInternamiento').value;
 
     const registro = {
         fecha,
@@ -31,7 +32,8 @@ function guardarRegistro() {
         presentes,
         total,
         custodioResponsable,
-        personalDGRS
+        personalDGRS,
+        centroInternamiento
     };
 
     let registros = JSON.parse(localStorage.getItem('registros')) || [];
@@ -97,10 +99,10 @@ function mostrarRegistrosPorFecha() {
 }
 
 // Función para exportar los registros a PDF
-async function exportarPDF() {
+function exportarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
-    
+
     const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
     const registrosFiltrados = registros.filter(registro => registro.fecha === fechaSeleccionada);
@@ -110,22 +112,33 @@ async function exportarPDF() {
         return;
     }
 
-    doc.setFontSize(18);
-    doc.text('Centro de Internamiento: DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', 10, 10);
-    doc.text('Registro de Internos', 10, 20);
+    // Añadir el logo en el encabezado
+    doc.addImage('logo_sspc2.png', 'PNG', 10, 10, 30, 15); // Ajusta las coordenadas y el tamaño según sea necesario
 
+    // Añadir título
+    doc.setFontSize(18);
+    doc.text('Centro de Internamiento:', 50, 15);
+    doc.setFontSize(14);
+    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', 50, 25);
+
+    doc.setFontSize(18);
+    doc.text('Registro de Internos', 50, 35);
+
+    // Establecer el formato de la tabla
     doc.setFontSize(10);
-    const startY = 30;
+    const startY = 50;
     let y = startY;
-    const columnWidth = [30, 25, 40, 30, 30, 25, 50, 50];
+    const columnWidth = [25, 20, 40, 25, 25, 20, 40, 40];
     const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS'];
     
+    // Añadir encabezados
     headers.forEach((header, i) => {
         doc.text(header, 10 + i * columnWidth[i], y);
     });
 
     y += 10;
     
+    // Añadir filas de registros
     registrosFiltrados.forEach(record => {
         Object.values(record).forEach((value, i) => {
             doc.text(value.toString(), 10 + i * columnWidth[i], y);
@@ -137,7 +150,7 @@ async function exportarPDF() {
 }
 
 // Función para exportar todos los registros a PDF
-async function exportarPDFCompleto() {
+function exportarPDFCompleto() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
     
@@ -148,22 +161,33 @@ async function exportarPDFCompleto() {
         return;
     }
 
-    doc.setFontSize(18);
-    doc.text('Centro de Internamiento: DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', 10, 10);
-    doc.text('Registro de Internos', 10, 20);
+    // Añadir el logo en el encabezado
+    doc.addImage('logo_sspc2.png', 'PNG', 10, 10, 30, 15); // Ajusta las coordenadas y el tamaño según sea necesario
 
+    // Añadir título
+    doc.setFontSize(18);
+    doc.text('Centro de Internamiento:', 50, 15);
+    doc.setFontSize(14);
+    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', 50, 25);
+
+    doc.setFontSize(18);
+    doc.text('Registro de Internos', 50, 35);
+
+    // Establecer el formato de la tabla
     doc.setFontSize(10);
-    const startY = 30;
+    const startY = 50;
     let y = startY;
-    const columnWidth = [30, 25, 40, 30, 30, 25, 50, 50];
+    const columnWidth = [25, 20, 40, 25, 25, 20, 40, 40];
     const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS'];
     
+    // Añadir encabezados
     headers.forEach((header, i) => {
         doc.text(header, 10 + i * columnWidth[i], y);
     });
 
     y += 10;
     
+    // Añadir filas de registros
     registros.forEach(record => {
         Object.values(record).forEach((value, i) => {
             doc.text(value.toString(), 10 + i * columnWidth[i], y);

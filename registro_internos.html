@@ -12,7 +12,7 @@
         <h2>Registro de Internos</h2>
         <form id="registroForm" onsubmit="guardarRegistro(); return false;">
             <label for="centroInternamiento">Centro de Internamiento:</label>
-            <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES">
+            <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES" required>
             
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
@@ -53,7 +53,9 @@
         
         <pre id="output" class="output"></pre>
     </div>
+    
+    <!-- Incluir jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.6.0/jspdf.umd.min.js"></script>
     <script src="scripts.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>

@@ -3,10 +3,9 @@ function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    // Lógica simple de autenticación
     if (username === 'admin' && password === 'admin') {
         localStorage.setItem('loggedIn', 'true');
-        window.location.href = 'registro_internos.html'; // Redirige a la página de registro de internos
+        window.location.href = 'registro_internos.html';
     } else {
         alert('Usuario o contraseña incorrectos.');
     }
@@ -101,7 +100,9 @@ function mostrarRegistrosPorFecha() {
 // Función para exportar los registros a PDF
 async function exportarPDF() {
     const { jsPDF } = window.jspdf;
-    if (!jsPDF) {
+    const { autoTable } = window.jspdf;
+
+    if (!jsPDF || !autoTable) {
         alert('jsPDF no está cargado correctamente.');
         return;
     }
@@ -116,27 +117,32 @@ async function exportarPDF() {
         return;
     }
 
-    // Centrar y ajustar el encabezado
+    // Añadir el encabezado
     doc.setFontSize(18);
-    doc.text('Centro de Internamiento:', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.text('Centro de Internamiento:', 105, 10, { align: 'center' });
     doc.setFontSize(14);
-    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
-
+    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', 105, 20, { align: 'center' });
     doc.setFontSize(18);
-    doc.text('Registro de Internos', doc.internal.pageSize.getWidth() / 2, 35, { align: 'center' });
+    doc.text('Registro de Internos', 105, 30, { align: 'center' });
 
-    // Configuración de autoTable para crear la tabla
-    const headers = [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']];
-    const rows = registrosFiltrados.map(record => Object.values(record));
-
+    // Establecer el formato de la tabla
     doc.autoTable({
-        head: headers,
-        body: rows,
-        startY: 50,
+        startY: 40,
+        head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']],
+        body: registrosFiltrados.map(record => [
+            record.fecha,
+            record.hora,
+            record.motivo,
+            record.excarcelados,
+            record.presentes,
+            record.total,
+            record.custodioResponsable,
+            record.personalDGRS
+        ]),
         theme: 'grid',
-        headStyles: { fillColor: [255, 255, 255], textColor: 0, lineWidth: 0.1 },
-        bodyStyles: { lineWidth: 0.1 },
-        styles: { cellPadding: 3, fontSize: 10, halign: 'center', valign: 'middle' },
+        headStyles: { fillColor: [0, 153, 255] },
+        styles: { fontSize: 10, cellPadding: 4 },
+        margin: { horizontal: 10 }
     });
 
     doc.save(`Registro_${fechaSeleccionada}.pdf`);
@@ -145,7 +151,9 @@ async function exportarPDF() {
 // Función para exportar todos los registros a PDF
 async function exportarPDFCompleto() {
     const { jsPDF } = window.jspdf;
-    if (!jsPDF) {
+    const { autoTable } = window.jspdf;
+
+    if (!jsPDF || !autoTable) {
         alert('jsPDF no está cargado correctamente.');
         return;
     }
@@ -158,27 +166,32 @@ async function exportarPDFCompleto() {
         return;
     }
 
-    // Centrar y ajustar el encabezado
+    // Añadir el encabezado
     doc.setFontSize(18);
-    doc.text('Centro de Internamiento:', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+    doc.text('Centro de Internamiento:', 105, 10, { align: 'center' });
     doc.setFontSize(14);
-    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
-
+    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', 105, 20, { align: 'center' });
     doc.setFontSize(18);
-    doc.text('Registro de Internos', doc.internal.pageSize.getWidth() / 2, 35, { align: 'center' });
+    doc.text('Registro de Internos', 105, 30, { align: 'center' });
 
-    // Configuración de autoTable para crear la tabla
-    const headers = [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']];
-    const rows = registros.map(record => Object.values(record));
-
+    // Establecer el formato de la tabla
     doc.autoTable({
-        head: headers,
-        body: rows,
-        startY: 50,
+        startY: 40,
+        head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']],
+        body: registros.map(record => [
+            record.fecha,
+            record.hora,
+            record.motivo,
+            record.excarcelados,
+            record.presentes,
+            record.total,
+            record.custodioResponsable,
+            record.personalDGRS
+        ]),
         theme: 'grid',
-        headStyles: { fillColor: [255, 255, 255], textColor: 0, lineWidth: 0.1 },
-        bodyStyles: { lineWidth: 0.1 },
-        styles: { cellPadding: 3, fontSize: 10, halign: 'center', valign: 'middle' },
+        headStyles: { fillColor: [0, 153, 255] },
+        styles: { fontSize: 10, cellPadding: 4 },
+        margin: { horizontal: 10 }
     });
 
     doc.save('Registro_Completo.pdf');

@@ -101,7 +101,6 @@ function mostrarRegistrosPorFecha() {
 // Función para exportar los registros a PDF
 async function exportarPDF() {
     const { jsPDF } = window.jspdf;
-
     if (!jsPDF) {
         alert('jsPDF no está cargado correctamente.');
         return;
@@ -126,27 +125,18 @@ async function exportarPDF() {
     doc.setFontSize(18);
     doc.text('Registro de Internos', doc.internal.pageSize.getWidth() / 2, 35, { align: 'center' });
 
-    // Establecer el formato de la tabla
-    doc.setFontSize(10);
-    const startY = 50;
-    let y = startY;
-    const columnWidth = [25, 20, 40, 25, 25, 20, 40, 40];
-    const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS'];
-    
-    // Añadir encabezados
-    headers.forEach((header, i) => {
-        doc.text(header, 10 + columnWidth.slice(0, i).reduce((a, b) => a + b, 0), y);
-    });
+    // Configuración de autoTable para crear la tabla
+    const headers = [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']];
+    const rows = registrosFiltrados.map(record => Object.values(record));
 
-    y += 10;
-    
-    // Añadir datos de la tabla
-    registrosFiltrados.forEach(record => {
-        Object.values(record).forEach((value, i) => {
-            const textValue = value ? value.toString() : ''; // Asegura que el valor no sea undefined o null
-            doc.text(textValue, 10 + columnWidth.slice(0, i).reduce((a, b) => a + b, 0), y);
-        });
-        y += 10;
+    doc.autoTable({
+        head: headers,
+        body: rows,
+        startY: 50,
+        theme: 'grid',
+        headStyles: { fillColor: [255, 255, 255], textColor: 0, lineWidth: 0.1 },
+        bodyStyles: { lineWidth: 0.1 },
+        styles: { cellPadding: 3, fontSize: 10, halign: 'center', valign: 'middle' },
     });
 
     doc.save(`Registro_${fechaSeleccionada}.pdf`);
@@ -155,7 +145,6 @@ async function exportarPDF() {
 // Función para exportar todos los registros a PDF
 async function exportarPDFCompleto() {
     const { jsPDF } = window.jspdf;
-
     if (!jsPDF) {
         alert('jsPDF no está cargado correctamente.');
         return;
@@ -178,27 +167,18 @@ async function exportarPDFCompleto() {
     doc.setFontSize(18);
     doc.text('Registro de Internos', doc.internal.pageSize.getWidth() / 2, 35, { align: 'center' });
 
-    // Establecer el formato de la tabla
-    doc.setFontSize(10);
-    const startY = 50;
-    let y = startY;
-    const columnWidth = [25, 20, 40, 25, 25, 20, 40, 40];
-    const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS'];
-    
-    // Añadir encabezados
-    headers.forEach((header, i) => {
-        doc.text(header, 10 + columnWidth.slice(0, i).reduce((a, b) => a + b, 0), y);
-    });
+    // Configuración de autoTable para crear la tabla
+    const headers = [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']];
+    const rows = registros.map(record => Object.values(record));
 
-    y += 10;
-    
-    // Añadir datos de la tabla
-    registros.forEach(record => {
-        Object.values(record).forEach((value, i) => {
-            const textValue = value ? value.toString() : ''; // Asegura que el valor no sea undefined o null
-            doc.text(textValue, 10 + columnWidth.slice(0, i).reduce((a, b) => a + b, 0), y);
-        });
-        y += 10;
+    doc.autoTable({
+        head: headers,
+        body: rows,
+        startY: 50,
+        theme: 'grid',
+        headStyles: { fillColor: [255, 255, 255], textColor: 0, lineWidth: 0.1 },
+        bodyStyles: { lineWidth: 0.1 },
+        styles: { cellPadding: 3, fontSize: 10, halign: 'center', valign: 'middle' },
     });
 
     doc.save('Registro_Completo.pdf');

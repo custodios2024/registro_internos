@@ -3,217 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Internos</title>
+    <title>Registro interno</title>
     <style>
-        /* Tu estilo aquí */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #e0f7fa; /* Azul celeste */
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 60px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, button, select {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .output {
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .record-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            padding: 10px;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto;
+            max-width: 150px;
+        }
     </style>
-    <!-- Importar jsPDF y jsPDF-Autotable desde CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.20/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-    <!-- Contenedor de login -->
-    <div id="loginContainer">
-        <h2>Inicio de sesión</h2>
-        <label for="username">Usuario:</label>
-        <input type="text" id="username">
-        <label for="password">Contraseña:</label>
-        <input type="password" id="password">
-        <button onclick="login()">Iniciar sesión</button>
-    </div>
-
-    <!-- Contenedor de registro -->
-    <div id="registroContainer" style="display:none;">
+    <div class="container">
+        <img src="logo_sspc.png" alt="Logo SSPC" class="logo"> <!-- Logo SSPC -->
         <h2>Registro de Internos</h2>
-        <form id="registroForm">
-            <!-- Agregar campo Centro de Internamiento -->
-            <label for="centro">Centro de Internamiento:</label>
-            <input type="text" id="centro" name="centro" value="DIRECCION DE MEDIDAS DE EJECUCION PARA ADOLESCENTES">
-            
-            <!-- Otros campos del formulario -->
+        <form id="registroForm" method="POST" action="guardar_registro.php">
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
-            
             <label for="hora">Hora:</label>
             <input type="time" id="hora" name="hora" required>
-            
             <label for="motivo">Motivo:</label>
             <input type="text" id="motivo" name="motivo" required>
-            
             <label for="excarcelados">Excarcelados:</label>
             <input type="number" id="excarcelados" name="excarcelados" required>
-            
             <label for="presentes">Presentes:</label>
-            <input type="number" id="presentes" name="presentes" required>
-            
+            <input type="number" id="presentes" name="presentes" required oninput="sumarTotal()">
             <label for="total">Total:</label>
-            <input type="number" id="total" name="total" required>
-            
+            <input type="number" id="total" name="total" required readonly>
             <label for="custodioResponsable">Custodio Responsable:</label>
             <input type="text" id="custodioResponsable" name="custodioResponsable" required>
-            
-            <label for="personalDGRS">Personal D.G.R.S.:</label>
+            <label for="personalDGRS">Personal de la DGRS:</label>
             <input type="text" id="personalDGRS" name="personalDGRS" required>
-
-            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del día</button>
-            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF completo</button>
+            <button type="submit" class="btn">Guardar</button>
+            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
         </form>
-        
-        <!-- Elementos adicionales para mostrar registros -->
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"></select>
+        <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
+        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"> <!-- Fechas se agregarán dinámicamente aquí --> </select>
         <div class="record-list" id="recordList"></div>
+        <pre id="output" class="output"></pre>
     </div>
-
     <script>
-        // Función para guardar el registro
-        function guardarRegistro() {
-            const registro = {
-                centro: document.getElementById('centro').value,
-                fecha: document.getElementById('fecha').value,
-                hora: document.getElementById('hora').value,
-                motivo: document.getElementById('motivo').value,
-                excarcelados: document.getElementById('excarcelados').value,
-                presentes: document.getElementById('presentes').value,
-                total: document.getElementById('total').value,
-                custodioResponsable: document.getElementById('custodioResponsable').value,
-                personalDGRS: document.getElementById('personalDGRS').value
-            };
-
-            // Guardar en localStorage
-            const registroID = `registro_${registro.fecha}_${registro.hora}`;
-            localStorage.setItem(registroID, JSON.stringify(registro));
-            alert('Registro guardado exitosamente');
+        function sumarTotal() {
+            const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
+            const presentes = parseInt(document.getElementById('presentes').value) || 0;
+            document.getElementById('total').value = excarcelados + presentes;
         }
 
-        // Función para exportar registros del día a PDF
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
+            const { autoTable } = window.jspdf;
             const doc = new jsPDF('landscape');
-            const fechaSeleccionada = document.getElementById('fecha').value;
+
+            doc.setFontSize(18);
+            doc.text('Registro de Internos', 105, 20, { align: 'center' });
+
+            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
             const registros = [];
 
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
+            for (const key in localStorage) {
                 if (key.startsWith('registro_') && key.includes(fechaSeleccionada)) {
-                    registros.push(JSON.parse(localStorage.getItem(key)));
+                    const registro = JSON.parse(localStorage.getItem(key));
+                    registros.push([
+                        registro.fecha,
+                        registro.hora,
+                        registro.motivo,
+                        registro.excarcelados,
+                        registro.presentes,
+                        registro.total,
+                        registro.custodioResponsable,
+                        registro.personalDGRS
+                    ]);
                 }
             }
 
-            if (registros.length === 0) {
-                alert('No hay registros para esta fecha.');
-                return;
-            }
-
-            // Encabezado centrado
-            const centroInternamiento = document.getElementById('centro').value;
-            doc.setFontSize(16);
-            doc.text("Registro de Internos", doc.internal.pageSize.getWidth() / 2, 15, { align: "center" });
-            doc.setFontSize(12);
-            doc.text(`Centro de Internamiento: ${centroInternamiento}`, doc.internal.pageSize.getWidth() / 2, 22, { align: "center" });
-
-            const columns = ["Centro", "Fecha", "Hora", "Motivo", "Excarcelados", "Presentes", "Total", "Custodio Responsable", "Personal DGRS"];
-            const rows = registros.map(registro => [
-                registro.centro,
-                registro.fecha,
-                registro.hora,
-                registro.motivo,
-                registro.excarcelados,
-                registro.presentes,
-                registro.total,
-                registro.custodioResponsable,
-                registro.personalDGRS
-            ]);
-
             doc.autoTable({
-                head: [columns],
-                body: rows,
-                startY: 30,  // Ajustar para dejar espacio para el encabezado
-                theme: 'grid'
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS']],
+                body: registros,
+                startY: 30,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 123, 255] },  // Azul celeste para encabezados
+                styles: { fontSize: 10, lineHeight: 1.5 }  // Interlineado 1.5
             });
 
             doc.save(`Registro_${fechaSeleccionada}.pdf`);
         }
 
-        // Función para exportar todos los registros a PDF
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
+            const { autoTable } = window.jspdf;
             const doc = new jsPDF('landscape');
+
+            doc.setFontSize(18);
+            doc.text('Registro Completo', 105, 20, { align: 'center' });
+
             const registros = [];
 
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
+            for (const key in localStorage) {
                 if (key.startsWith('registro_')) {
-                    registros.push(JSON.parse(localStorage.getItem(key)));
+                    const registro = JSON.parse(localStorage.getItem(key));
+                    registros.push([
+                        registro.fecha,
+                        registro.hora,
+                        registro.motivo,
+                        registro.excarcelados,
+                        registro.presentes,
+                        registro.total,
+                        registro.custodioResponsable,
+                        registro.personalDGRS
+                    ]);
                 }
             }
 
-            if (registros.length === 0) {
-                alert('No hay registros para exportar.');
-                return;
-            }
-
-            // Encabezado centrado
-            const centroInternamiento = document.getElementById('centro').value;
-            doc.setFontSize(16);
-            doc.text("Registro de Internos", doc.internal.pageSize.getWidth() / 2, 15, { align: "center" });
-            doc.setFontSize(12);
-            doc.text(`Centro de Internamiento: ${centroInternamiento}`, doc.internal.pageSize.getWidth() / 2, 22, { align: "center" });
-
-            const columns = ["Centro", "Fecha", "Hora", "Motivo", "Excarcelados", "Presentes", "Total", "Custodio Responsable", "Personal DGRS"];
-            const rows = registros.map(registro => [
-                registro.centro,
-                registro.fecha,
-                registro.hora,
-                registro.motivo,
-                registro.excarcelados,
-                registro.presentes,
-                registro.total,
-                registro.custodioResponsable,
-                registro.personalDGRS
-            ]);
-
             doc.autoTable({
-                head: [columns],
-                body: rows,
-                startY: 30,  // Ajustar para dejar espacio para el encabezado
-                theme: 'grid'
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS']],
+                body: registros,
+                startY: 30,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 123, 255] },  // Azul celeste para encabezados
+                styles: { fontSize: 10, lineHeight: 1.5 }  // Interlineado 1.5
             });
 
             doc.save('Registro_Completo.pdf');
-        }
-
-        // Función para mostrar registros por fecha
-        function mostrarRegistrosPorFecha() {
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            const recordList = document.getElementById('recordList');
-            recordList.innerHTML = ''; // Limpiar la lista antes de mostrar los nuevos registros
-
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
-                if (key.startsWith('registro_') && key.includes(fechaSeleccionada)) {
-                    const registro = JSON.parse(localStorage.getItem(key));
-                    const registroElement = document.createElement('div');
-                    registroElement.textContent = `Centro: ${registro.centro}, Fecha: ${registro.fecha}, Hora: ${registro.hora}, Motivo: ${registro.motivo}, Excarcelados: ${registro.excarcelados}, Presentes: ${registro.presentes}, Total: ${registro.total}, Custodio Responsable: ${registro.custodioResponsable}, Personal DGRS: ${registro.personalDGRS}`;
-                    recordList.appendChild(registroElement);
-                }
-            }
-        }
-
-        // Funciones de login y manejo de sesión
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            if (username === 'usuario' && password === 'contraseña') {
-                alert('Inicio de sesión exitoso');
-                document.getElementById('loginContainer').style.display = 'none';
-                document.getElementById('registroContainer').style.display = 'block';
-                localStorage.setItem('sessionActive', 'true');
-            } else {
-                alert('Usuario o contraseña incorrectos');
-            }
         }
 
         function cerrarSesion() {
@@ -230,5 +186,7 @@
 
         window.onload = verificarSesion;
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/2.5.3/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>

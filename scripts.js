@@ -1,3 +1,4 @@
+// Función para guardar el registro
 function guardarRegistro() {
     const fecha = document.getElementById('fecha').value;
     const hora = document.getElementById('hora').value;
@@ -27,12 +28,14 @@ function guardarRegistro() {
     mostrarRegistrosPorFecha(); // Actualiza la lista de registros
 }
 
+// Función para sumar los valores de excarcelados y presentes
 function sumarTotal() {
     const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
     const presentes = parseInt(document.getElementById('presentes').value) || 0;
     document.getElementById('total').value = excarcelados + presentes;
 }
 
+// Función para mostrar registros por fecha
 function mostrarRegistrosPorFecha() {
     const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
@@ -79,6 +82,7 @@ function mostrarRegistrosPorFecha() {
     recordList.appendChild(table);
 }
 
+// Función para exportar los registros a PDF
 function exportarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
@@ -118,6 +122,7 @@ function exportarPDF() {
     doc.save(`Registro_${fechaSeleccionada}.pdf`);
 }
 
+// Función para exportar todos los registros a PDF
 function exportarPDFCompleto() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
@@ -155,12 +160,13 @@ function exportarPDFCompleto() {
     doc.save('Registro_Completo.pdf');
 }
 
+// Función para cerrar sesión
 function cerrarSesion() {
     localStorage.removeItem('loggedIn');
     window.location.href = 'index.html';
 }
 
-// Inicializar la lista de fechas en el select
+// Inicializa la lista de fechas en el select
 function inicializarFechas() {
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
     const fechas = [...new Set(registros.map(registro => registro.fecha))];
@@ -174,5 +180,5 @@ function inicializarFechas() {
     });
 }
 
-// Llamar a inicializarFechas al cargar la página
+// Llama a inicializarFechas al cargar la página
 window.onload = inicializarFechas;

@@ -3,22 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Interno</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Registro Internos</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Asegúrate de tener este archivo -->
 </head>
 <body>
     <script>
         // Verificar si el usuario está autenticado
         const loggedIn = localStorage.getItem('loggedIn');
         if (!loggedIn) {
-            // Redirigir a la página de inicio de sesión si no está autenticado
-            window.location.href = 'index.html';
+            window.location.href = 'index.html'; // Redirigir a la página de inicio de sesión
         }
     </script>
     <div class="container">
         <img src="logo_sspc1.png" alt="Logo SSPC" class="logo">
         <h2>Registro de Internos</h2>
-        <form id="registroForm" method="POST">
+        <form id="registroForm">
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
             <label for="hora">Hora:</label>
@@ -35,9 +34,11 @@
             <input type="text" id="custodioResponsable" name="custodioResponsable" required>
             <label for="personalDGRS">Personal de la DGRS:</label>
             <input type="text" id="personalDGRS" name="personalDGRS" required>
+            <label for="centroInternamiento">Centro de Internamiento:</label>
+            <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES">
             <button type="submit" class="btn">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del día</button>
-            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF completo</button>
+            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
         </form>
         <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
@@ -47,8 +48,6 @@
         <div class="record-list" id="recordList"></div>
         <pre id="output" class="output"></pre>
     </div>
-    <script src="scripts.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.16/jspdf.plugin.autotable.min.js"></script>
+    <script src="scripts.js"></script> <!-- Incluye el script de JavaScript -->
 </body>
 </html>

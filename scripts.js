@@ -146,7 +146,8 @@ async function exportarPDF() {
     // Añadir datos de la tabla
     registrosFiltrados.forEach(record => {
         Object.values(record).forEach((value, i) => {
-            doc.text(value.toString(), 10 + i * columnWidth[i], y);
+            const textValue = value ? value.toString() : ''; // Asegura que el valor no sea undefined o null
+            doc.text(textValue, 10 + i * columnWidth[i], y);
         });
         y += 10;
     });
@@ -200,7 +201,8 @@ async function exportarPDFCompleto() {
     // Añadir datos de la tabla
     registros.forEach(record => {
         Object.values(record).forEach((value, i) => {
-            doc.text(value.toString(), 10 + i * columnWidth[i], y);
+            const textValue = value ? value.toString() : ''; // Asegura que el valor no sea undefined o null
+            doc.text(textValue, 10 + i * columnWidth[i], y);
         });
         y += 10;
     });
@@ -230,4 +232,3 @@ function inicializarFechas() {
 
 // Llama a inicializarFechas al cargar la página
 window.onload = inicializarFechas;
-

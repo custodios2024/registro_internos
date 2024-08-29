@@ -117,14 +117,14 @@ async function exportarPDF() {
         return;
     }
 
-    // Añadir título
+    // Centrar y ajustar el encabezado
     doc.setFontSize(18);
-    doc.text('Centro de Internamiento:', 50, 15);
+    doc.text('Centro de Internamiento:', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
     doc.setFontSize(14);
-    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', 50, 25);
+    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
 
     doc.setFontSize(18);
-    doc.text('Registro de Internos', 50, 35);
+    doc.text('Registro de Internos', doc.internal.pageSize.getWidth() / 2, 35, { align: 'center' });
 
     // Establecer el formato de la tabla
     doc.setFontSize(10);
@@ -169,14 +169,14 @@ async function exportarPDFCompleto() {
         return;
     }
 
-    // Añadir título
+    // Centrar y ajustar el encabezado
     doc.setFontSize(18);
-    doc.text('Centro de Internamiento:', 50, 15);
+    doc.text('Centro de Internamiento:', doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
     doc.setFontSize(14);
-    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', 50, 25);
+    doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', doc.internal.pageSize.getWidth() / 2, 25, { align: 'center' });
 
     doc.setFontSize(18);
-    doc.text('Registro de Internos', 50, 35);
+    doc.text('Registro de Internos', doc.internal.pageSize.getWidth() / 2, 35, { align: 'center' });
 
     // Establecer el formato de la tabla
     doc.setFontSize(10);

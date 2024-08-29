@@ -53,7 +53,18 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div id="loginContainer" class="container">
+        <h2>Iniciar Sesión</h2>
+        <form id="loginForm">
+            <label for="username">Usuario:</label>
+            <input type="text" id="username" required>
+            <label for="password">Contraseña:</label>
+            <input type="password" id="password" required>
+            <button type="button" class="btn" onclick="login()">Iniciar Sesión</button>
+        </form>
+    </div>
+    
+    <div id="registroContainer" class="container" style="display:none;">
         <h2>Registro de Internos</h2>
         <form id="registroForm">
             <label for="centro">Centro de Internamiento:</label>
@@ -109,33 +120,64 @@
                 personalDGRS: document.getElementById('personalDGRS').value
             };
 
-            // Guardar registro en localStorage o enviar a backend
-            localStorage.setItem('registro_' + registro.fecha + '_' + registro.hora, JSON.stringify(registro));
+            // Guardar registro en localStorage
+            const key = 'registro_' + registro.fecha + '_' + registro.hora;
+            localStorage.setItem(key, JSON.stringify(registro));
             alert('Registro guardado exitosamente.');
+            agregarRegistroATabla(registro);
+        }
+
+        function agregarRegistroATabla(registro) {
+            const recordList = document.getElementById('recordList');
+            const registroDiv = document.createElement('div');
+            registroDiv.textContent = `Fecha: ${registro.fecha}, Hora: ${registro.hora}, Motivo: ${registro.motivo}`;
+            recordList.appendChild(registroDiv);
         }
 
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
+            let registros = [];
 
-            // Aquí se incluiría la lógica para obtener los registros y exportarlos a PDF
+            // Obtener registros de la fecha seleccionada
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith('registro_') && key.includes(fechaSeleccionada)) {
+                    registros.push(JSON.parse(localStorage.getItem(key)));
+                }
+            }
+
             doc.setFontSize(18);
             doc.text(`Registro del ${fechaSeleccionada}`, 14, 20);
+            
+            registros.forEach((registro, index) => {
+                doc.text(`Registro ${index + 1}: ${JSON.stringify(registro)}`, 14, 30 + (index * 10));
+            });
 
-            // Ejemplo de guardado del PDF
             doc.save(`Registro_${fechaSeleccionada}.pdf`);
         }
 
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
+            let registros = [];
 
-            // Aquí se incluiría la lógica para obtener todos los registros y exportarlos a PDF
+            // Obtener todos los registros
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith('registro_')) {
+                    registros.push(JSON.parse(localStorage.getItem(key)));
+                }
+            }
+
             doc.setFontSize(18);
             doc.text('Registro Completo', 14, 20);
+            
+            registros.forEach((registro, index) => {
+                doc.text(`Registro ${index + 1}: ${JSON.stringify(registro)}`, 14, 30 + (index * 10));
+            });
 
-            // Ejemplo de guardado del PDF
             doc.save('Registro_Completo.pdf');
         }
 
@@ -145,20 +187,64 @@
         }
 
         function mostrarRegistrosPorFecha() {
-            // Lógica para mostrar registros basados en la fecha seleccionada
+            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
+            const recordList = document.getElementById('recordList');
+            recordList.innerHTML = '';
+
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith('registro_') && key.includes(fechaSeleccionada)) {
+                    let registro = JSON.parse(localStorage.getItem(key));
+                    agregarRegistroATabla(registro);
+                }
+            }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            // Cargar fechas de registros del localStorage y agregarlas al selector
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Verificar credenciales (puedes cambiar esto por un método más seguro)
+            if (username === 'admin' && password === 'admin') {
+                localStorage.setItem('loggedIn', 'true');
+                mostrarRegistro();
+            } else {
+                alert('Usuario o contraseña incorrectos');
+            }
+        }
+
+        function mostrarRegistro() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('registroContainer').style.display = 'block';
+            cargarFechas();
+        }
+
+        function cargarFechas() {
+            const fechas = new Set();
+
             for (let i = 0; i < localStorage.length; i++) {
                 let key = localStorage.key(i);
                 if (key.startsWith('registro_')) {
                     let registro = JSON.parse(localStorage.getItem(key));
-                    let option = document.createElement('option');
-                    option.value = registro.fecha;
-                    option.text = registro.fecha;
-                    document.getElementById('fechaSeleccion').appendChild(option);
+                    fechas.add(registro.fecha);
                 }
+            }
+
+            const fechaSeleccion = document.getElementById('fechaSeleccion');
+            fechaSeleccion.innerHTML = '';
+
+            fechas.forEach(fecha => {
+                let option = document.createElement('option');
+                option.value = fecha;
+                option.text = fecha;
+                fechaSeleccion.appendChild(option);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const loggedIn = localStorage.getItem('loggedIn');
+            if (loggedIn === 'true') {
+                mostrarRegistro();
             }
         });
     </script>

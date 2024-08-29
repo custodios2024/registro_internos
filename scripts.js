@@ -1,3 +1,17 @@
+// Función para iniciar sesión
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    // Lógica simple de autenticación
+    if (username === 'admin' && password === 'admin') {
+        localStorage.setItem('loggedIn', 'true');
+        window.location.href = 'registro_internos.html'; // Redirige a la página de registro de internos
+    } else {
+        alert('Usuario o contraseña incorrectos.');
+    }
+}
+
 // Función para guardar el registro
 function guardarRegistro() {
     const fecha = document.getElementById('fecha').value;

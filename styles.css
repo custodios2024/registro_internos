@@ -3,7 +3,7 @@ body {
     background-color: #f4f4f4;
 }
 
-.login-container, .container {
+.container {
     max-width: 500px;
     margin: auto;
     background: white;
@@ -34,7 +34,7 @@ input, button, select {
 }
 
 .btn:hover {
-    background-color: #009ac1; /* Azul más oscuro al pasar el ratón */
+    background-color: #009acd;
 }
 
 .output {
@@ -55,6 +55,6 @@ input, button, select {
 .logo {
     display: block;
     margin: 0 auto;
-    width: 100px; /* Ajustar según el tamaño real de la imagen */
-    height: auto;
+    width: 100px;
+    height: 96px;
 }

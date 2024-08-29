@@ -97,7 +97,7 @@ function mostrarRegistrosPorFecha() {
 }
 
 // Función para exportar los registros a PDF
-function exportarPDF() {
+async function exportarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
     
@@ -137,7 +137,7 @@ function exportarPDF() {
 }
 
 // Función para exportar todos los registros a PDF
-function exportarPDFCompleto() {
+async function exportarPDFCompleto() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
     

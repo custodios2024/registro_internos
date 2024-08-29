@@ -3,51 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inicio de Sesión</title>
+    <title>Registro de Internos</title>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 300px; margin: auto; background: white; padding: 20px; border-radius: 8px; margin-top: 100px; }
-        h2 { text-align: center; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        h2, h3 { text-align: center; }
         label { font-weight: bold; }
         input, button { width: 100%; margin-bottom: 10px; padding: 10px; }
         .btn { background-color: #007bff; color: white; border: none; cursor: pointer; }
         .btn:hover { background-color: #0056b3; }
+        .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Inicio de Sesión</h2>
-        <form id="loginForm">
-            <label for="username">Usuario:</label>
-            <input type="text" id="username" name="username" required>
-
-            <label for="password">Contraseña:</label>
-            <input type="password" id="password" name="password" required>
-
-            <button type="button" class="btn" onclick="login()">Ingresar</button>
-        </form>
-        <p id="error" style="color:red; text-align:center;"></p>
-    </div>
-
     <script>
-        function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
+        // Verificar si el usuario está autenticado
+        const loggedIn = localStorage.getItem('loggedIn');
 
-            // Credenciales de ejemplo (en un caso real, debes verificar con una base de datos)
-            const validUsername = 'usuario';
-            const validPassword = 'contraseña123';
-
-            if (username === validUsername && password === validPassword) {
-                // Almacena el estado de autenticación en el almacenamiento local del navegador
-                localStorage.setItem('loggedIn', true);
-                // Redirige a la página principal si las credenciales son correctas
-                window.location.href = 'registro_internos.html';
-            } else {
-                // Muestra un mensaje de error si las credenciales no son correctas
-                document.getElementById('error').innerText = 'Usuario o contraseña incorrectos';
-            }
+        if (!loggedIn) {
+            // Redirige a la página de inicio de sesión si no está autenticado
+            window.location.href = 'login.html';
         }
     </script>
+    <div class="container">
+        <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Internos - Penal de Menores</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="js/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <h1>Registro de Internos - Penal de Menores</h1>
+    
+    <form id="registroForm">
+        <label for="fecha">Fecha:</label>
+        <input type="date" id="fecha" name="fecha" required>
+        
+        <label for="hora">Hora:</label>
+        <input type="time" id="hora" name="hora" required>
+        
+        <label for="motivoOrdinario">Motivo Ordinario:</label>
+        <input type="text" id="motivoOrdinario" name="motivoOrdinario" required>
+        
+        <label for="motivoExtraordinario">Motivo Extraordinario:</label>
+        <input type="text" id="motivoExtraordinario" name="motivoExtraordinario" required>
+        
+        <label for="excarcelados">Excarcelados:</label>
+        <input type="number" id="excarcelados" name="excarcelados" required>
+        
+        <label for="presentes">Presentes:</label>
+        <input type="number" id="presentes" name="presentes" required>
+        
+        <label for="total">Total:</label>
+        <input type="number" id="total" name="total" required>
+        
+        <label for="custodioResponsable">Custodio Responsable:</label>
+        <input type="text" id="custodioResponsable" name="custodioResponsable" required>
+        
+        <label for="personalDGRS">Personal de la D.G.R.S.:</label>
+        <input type="text" id="personalDGRS" name="personalDGRS" required>
+        
+        <button type="button" onclick="agregarRegistro()">Agregar Registro</button>
+    </form>
+
+    <table id="tablaRegistros">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Motivo Ordinario</th>
+                <th>Motivo Extraordinario</th>
+                <th>Excarcelados</th>
+                <th>Presentes</th>
+                <th>Total</th>
+                <th>Custodio Responsable</th>
+                <th>Personal D.G.R.S.</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <button onclick="guardarComoPDF()">Guardar como PDF</button>
+
+    <script src="script.js"></script>
 </body>
 </html>

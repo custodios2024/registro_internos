@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro interno</title>
+    <title>Registro de Internos</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -18,7 +18,7 @@
         }
         h2 {
             text-align: center;
-            margin-top: 60px;
+            margin-top: 20px;
         }
         label {
             font-weight: bold;
@@ -53,19 +53,11 @@
     </style>
 </head>
 <body>
-    <script>
-        // Verificar si el usuario está autenticado
-        const loggedIn = localStorage.getItem('loggedIn');
-        if (!loggedIn) {
-            // Redirigir a la página de inicio de sesión si no está autenticado
-            window.location.href = 'index.html';
-        }
-    </script>
     <div class="container">
         <h2>Registro de Internos</h2>
-        <form id="registroForm" method="POST" action="guardar_registro.php">
-            <label for="centroInternamiento">Centro de Internamiento:</label>
-            <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES" readonly>
+        <form id="registroForm">
+            <label for="centro">Centro de Internamiento:</label>
+            <input type="text" id="centro" name="centro" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES">
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
             <label for="hora">Hora:</label>
@@ -82,7 +74,7 @@
             <input type="text" id="custodioResponsable" name="custodioResponsable" required>
             <label for="personalDGRS">Personal de la DGRS:</label>
             <input type="text" id="personalDGRS" name="personalDGRS" required>
-            <button type="submit" class="btn">Guardar</button>
+            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
             <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del día</button>
             <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF completo</button>
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
@@ -94,56 +86,81 @@
         <div class="record-list" id="recordList"></div>
         <pre id="output" class="output"></pre>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
-        // Función para sumar el total de presentes y excarcelados
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
             const presentes = parseInt(document.getElementById('presentes').value) || 0;
             document.getElementById('total').value = excarcelados + presentes;
         }
 
-        // Función para exportar registros a PDF
+        function guardarRegistro() {
+            // Obtener valores del formulario
+            const registro = {
+                centro: document.getElementById('centro').value,
+                fecha: document.getElementById('fecha').value,
+                hora: document.getElementById('hora').value,
+                motivo: document.getElementById('motivo').value,
+                excarcelados: document.getElementById('excarcelados').value,
+                presentes: document.getElementById('presentes').value,
+                total: document.getElementById('total').value,
+                custodioResponsable: document.getElementById('custodioResponsable').value,
+                personalDGRS: document.getElementById('personalDGRS').value
+            };
+
+            // Guardar registro en localStorage o enviar a backend
+            localStorage.setItem('registro_' + registro.fecha + '_' + registro.hora, JSON.stringify(registro));
+            alert('Registro guardado exitosamente.');
+        }
+
         function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            // Aquí se incluiría la lógica para obtener los registros desde MySQL y exportarlos a PDF
-            // Ejemplo de estructura básica:
+
+            // Aquí se incluiría la lógica para obtener los registros y exportarlos a PDF
             doc.setFontSize(18);
             doc.text(`Registro del ${fechaSeleccionada}`, 14, 20);
-            // Añadir más detalles del registro aquí
+
+            // Ejemplo de guardado del PDF
             doc.save(`Registro_${fechaSeleccionada}.pdf`);
         }
 
-        // Función para exportar todos los registros a PDF
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
-            // Aquí se incluiría la lógica para obtener todos los registros desde MySQL y exportarlos a PDF
-            // Ejemplo de estructura básica:
+
+            // Aquí se incluiría la lógica para obtener todos los registros y exportarlos a PDF
             doc.setFontSize(18);
             doc.text('Registro Completo', 14, 20);
-            // Añadir más detalles del registro aquí
+
+            // Ejemplo de guardado del PDF
             doc.save('Registro_Completo.pdf');
         }
 
-        // Función para cerrar sesión
         function cerrarSesion() {
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
         }
 
-        // Función para mostrar registros por fecha (deberás implementar esta lógica en PHP y MySQL)
         function mostrarRegistrosPorFecha() {
-            // Lógica para mostrar registros desde MySQL
+            // Lógica para mostrar registros basados en la fecha seleccionada
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cargar fechas de registros del localStorage y agregarlas al selector
+            for (let i = 0; i < localStorage.length; i++) {
+                let key = localStorage.key(i);
+                if (key.startsWith('registro_')) {
+                    let registro = JSON.parse(localStorage.getItem(key));
+                    let option = document.createElement('option');
+                    option.value = registro.fecha;
+                    option.text = registro.fecha;
+                    document.getElementById('fechaSeleccion').appendChild(option);
+                }
+            }
+        });
     </script>
-    <!-- Importar jsPDF desde CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>
-
-
-
-
-

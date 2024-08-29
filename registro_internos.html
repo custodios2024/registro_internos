@@ -11,6 +11,9 @@
         <img src="logo_sspc2.png" alt="Logo SSPC" class="logo">
         <h2>Registro de Internos</h2>
         <form id="registroForm" onsubmit="guardarRegistro(); return false;">
+            <label for="centroInternamiento">Centro de Internamiento:</label>
+            <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES">
+            
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
             
@@ -50,7 +53,7 @@
         
         <pre id="output" class="output"></pre>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="scripts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
 </html>

@@ -4,57 +4,120 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro Internos</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Incluye jsPDF desde un CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.6.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #0099ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #007acc;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+            color: #333;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <img src="logo_sspc2.png" alt="Logo SSPC" class="logo">
-        <h2>Registro de Internos</h2>
-        <form id="registroForm" onsubmit="guardarRegistro(); return false;">
-            <label for="fecha">Fecha:</label>
-            <input type="date" id="fecha" name="fecha" required>
-            
-            <label for="hora">Hora:</label>
-            <input type="time" id="hora" name="hora" required>
-            
-            <label for="motivo">Motivo:</label>
-            <input type="text" id="motivo" name="motivo" required>
-            
-            <label for="excarcelados">Excarcelados:</label>
-            <input type="number" id="excarcelados" name="excarcelados" required>
-            
-            <label for="presentes">Presentes:</label>
-            <input type="number" id="presentes" name="presentes" required oninput="sumarTotal()">
-            
-            <label for="total">Total:</label>
-            <input type="number" id="total" name="total" required readonly>
-            
-            <label for="custodioResponsable">Custodio Responsable:</label>
-            <input type="text" id="custodioResponsable" name="custodioResponsable" required>
-            
-            <label for="personalDGRS">Personal de la DGRS:</label>
-            <input type="text" id="personalDGRS" name="personalDGRS" required>
-            
+        <h1>Registro de Internos</h1>
+        <div class="form-group">
             <label for="centroInternamiento">Centro de Internamiento:</label>
-            <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES" required>
-            
-            <button type="submit" class="btn">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del día</button>
-            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF completo</button>
-            <button type="button" class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
-        </form>
-        
-        <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()">
-            <!-- Fechas se agregarán dinámicamente aquí -->
-        </select>
-        
-        <div class="record-list" id="recordList"></div>
-        
-        <pre id="output" class="output"></pre>
+            <input type="text" id="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES">
+        </div>
+        <div class="form-group">
+            <label for="fecha">Fecha:</label>
+            <input type="text" id="fecha" placeholder="Fecha">
+        </div>
+        <div class="form-group">
+            <label for="hora">Hora:</label>
+            <input type="text" id="hora" placeholder="Hora">
+        </div>
+        <div class="form-group">
+            <label for="motivo">Motivo:</label>
+            <input type="text" id="motivo" placeholder="Motivo">
+        </div>
+        <div class="form-group">
+            <label for="excarcelados">Excarcelados:</label>
+            <input type="number" id="excarcelados" placeholder="Excarcelados" oninput="sumarTotal()">
+        </div>
+        <div class="form-group">
+            <label for="presentes">Presentes:</label>
+            <input type="number" id="presentes" placeholder="Presentes" oninput="sumarTotal()">
+        </div>
+        <div class="form-group">
+            <label for="total">Total:</label>
+            <input type="text" id="total" readonly>
+        </div>
+        <div class="form-group">
+            <label for="custodioResponsable">Custodio Responsable:</label>
+            <input type="text" id="custodioResponsable" placeholder="Custodio Responsable">
+        </div>
+        <div class="form-group">
+            <label for="personalDGRS">Personal de la DGRS:</label>
+            <input type="text" id="personalDGRS" placeholder="Personal de la DGRS">
+        </div>
+        <button onclick="guardarRegistro()">Guardar Registro</button>
+        <button onclick="exportarPDF()">Exportar PDF</button>
+        <button onclick="exportarPDFCompleto()">Exportar PDF Completo</button>
+        <h2>Registros</h2>
+        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"></select>
+        <div id="recordList"></div>
     </div>
     <script src="scripts.js"></script>
 </body>
 </html>
+

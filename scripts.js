@@ -201,16 +201,17 @@ function exportarPDFCompleto() {
 // Función para cerrar sesión
 function cerrarSesion() {
     localStorage.removeItem('loggedIn');
-    window.location.href = 'index.html';
+    window.location.href = 'index.html'; // Redirige a la página de inicio de sesión
 }
 
-// Inicializa la lista de fechas en el select
-function inicializarFechas() {
-    const registros = JSON.parse(localStorage.getItem('registros')) || [];
-    const fechas = [...new Set(registros.map(registro => registro.fecha))];
+// Llenar el selector de fechas
+function llenarSelectorFechas() {
+    const fechas = JSON.parse(localStorage.getItem('registros'))?.map(registro => registro.fecha) || [];
+    const fechasUnicas = [...new Set(fechas)];
+    
     const fechaSeleccion = document.getElementById('fechaSeleccion');
-
-    fechas.forEach(fecha => {
+    fechaSeleccion.innerHTML = '<option value="">Selecciona una fecha</option>';
+    fechasUnicas.forEach(fecha => {
         const option = document.createElement('option');
         option.value = fecha;
         option.textContent = fecha;
@@ -218,5 +219,9 @@ function inicializarFechas() {
     });
 }
 
-// Llama a inicializarFechas al cargar la página
-window.onload = inicializarFechas;
+// Llamada inicial para llenar el selector de fechas
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('registro_internos.html')) {
+        llenarSelectorFechas();
+    }
+});

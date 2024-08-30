@@ -101,8 +101,9 @@ function mostrarRegistrosPorFecha() {
 // Función para exportar los registros a PDF
 async function exportarPDF() {
     const { jsPDF } = window.jspdf;
+    const { autoTable } = jsPDF;
 
-    if (!jsPDF) {
+    if (!jsPDF || !autoTable) {
         alert('jsPDF no está cargado correctamente.');
         return;
     }
@@ -129,23 +130,23 @@ async function exportarPDF() {
     // Establecer el formato de la tabla
     doc.setFontSize(10);
     const startY = 60;
-    let y = startY;
-    const columnWidth = [25, 20, 40, 25, 25, 20, 40, 40];
-    const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS'];
-    
-    // Añadir encabezados
-    headers.forEach((header, i) => {
-        doc.text(header, 10 + i * columnWidth[i], y);
-    });
 
-    y += 10;
-    
-    // Añadir datos de la tabla
-    registrosFiltrados.forEach(record => {
-        Object.values(record).forEach((value, i) => {
-            doc.text(value.toString(), 10 + i * columnWidth[i], y);
-        });
-        y += 10;
+    doc.autoTable({
+        startY,
+        head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']],
+        body: registrosFiltrados.map(record => [
+            record.fecha,
+            record.hora,
+            record.motivo,
+            record.excarcelados,
+            record.presentes,
+            record.total,
+            record.custodioResponsable,
+            record.personalDGRS
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [100, 100, 255] },
+        margin: { left: 10, right: 10 }
     });
 
     doc.save(`Registro_${fechaSeleccionada}.pdf`);
@@ -154,8 +155,9 @@ async function exportarPDF() {
 // Función para exportar todos los registros a PDF
 async function exportarPDFCompleto() {
     const { jsPDF } = window.jspdf;
+    const { autoTable } = jsPDF;
 
-    if (!jsPDF) {
+    if (!jsPDF || !autoTable) {
         alert('jsPDF no está cargado correctamente.');
         return;
     }
@@ -180,23 +182,23 @@ async function exportarPDFCompleto() {
     // Establecer el formato de la tabla
     doc.setFontSize(10);
     const startY = 60;
-    let y = startY;
-    const columnWidth = [25, 20, 40, 25, 25, 20, 40, 40];
-    const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS'];
 
-    // Añadir encabezados
-    headers.forEach((header, i) => {
-        doc.text(header, 10 + i * columnWidth[i], y);
-    });
-
-    y += 10;
-    
-    // Añadir datos de la tabla
-    registros.forEach(record => {
-        Object.values(record).forEach((value, i) => {
-            doc.text(value.toString(), 10 + i * columnWidth[i], y);
-        });
-        y += 10;
+    doc.autoTable({
+        startY,
+        head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']],
+        body: registros.map(record => [
+            record.fecha,
+            record.hora,
+            record.motivo,
+            record.excarcelados,
+            record.presentes,
+            record.total,
+            record.custodioResponsable,
+            record.personalDGRS
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [100, 100, 255] },
+        margin: { left: 10, right: 10 }
     });
 
     doc.save('Registro_Completo.pdf');
@@ -224,3 +226,4 @@ function inicializarFechas() {
 
 // Llama a inicializarFechas al cargar la página
 window.onload = inicializarFechas;
+

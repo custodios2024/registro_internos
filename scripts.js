@@ -4,7 +4,7 @@ function login() {
     const password = document.getElementById('password').value;
 
     // Lógica simple de autenticación
-    if (username === 'admin' && password === 'admin') {
+    if (username === 'admin' && password === 'contraseña123') {
         localStorage.setItem('loggedIn', 'true');
         window.location.href = 'registro_internos.html'; // Redirige a la página de registro de internos
     } else {

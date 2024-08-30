@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Internos</title>
+    <title>Registro de Internos</title>
+    <!-- Carga de bibliotecas de jsPDF y jsPDF-AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.6.0/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
     <style>
+        /* Estilos generales */
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
@@ -69,49 +71,18 @@
 <body>
     <div class="container">
         <h1>Registro de Internos</h1>
+        <!-- Formulario para agregar registros -->
         <div class="form-group">
             <label for="centroInternamiento">Centro de Internamiento:</label>
             <input type="text" id="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES">
         </div>
         <div class="form-group">
             <label for="fecha">Fecha:</label>
-            <input type="text" id="fecha" placeholder="Fecha">
+            <input type="date" id="fecha">
         </div>
         <div class="form-group">
             <label for="hora">Hora:</label>
-            <input type="text" id="hora" placeholder="Hora">
+            <input type="time" id="hora">
         </div>
         <div class="form-group">
-            <label for="motivo">Motivo:</label>
-            <input type="text" id="motivo" placeholder="Motivo">
-        </div>
-        <div class="form-group">
-            <label for="excarcelados">Excarcelados:</label>
-            <input type="number" id="excarcelados" placeholder="Excarcelados" oninput="sumarTotal()">
-        </div>
-        <div class="form-group">
-            <label for="presentes">Presentes:</label>
-            <input type="number" id="presentes" placeholder="Presentes" oninput="sumarTotal()">
-        </div>
-        <div class="form-group">
-            <label for="total">Total:</label>
-            <input type="text" id="total" readonly>
-        </div>
-        <div class="form-group">
-            <label for="custodioResponsable">Custodio Responsable:</label>
-            <input type="text" id="custodioResponsable" placeholder="Custodio Responsable">
-        </div>
-        <div class="form-group">
-            <label for="personalDGRS">Personal de la DGRS:</label>
-            <input type="text" id="personalDGRS" placeholder="Personal de la DGRS">
-        </div>
-        <button onclick="guardarRegistro()">Guardar Registro</button>
-        <button onclick="exportarPDF()">Exportar PDF</button>
-        <button onclick="exportarPDFCompleto()">Exportar PDF Completo</button>
-        <h2>Registros</h2>
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"></select>
-        <div id="recordList"></div>
-    </div>
-    <script src="scripts.js"></script>
-</body>
-</html>
+            <label for="motivo">Motivo:</label

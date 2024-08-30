@@ -23,6 +23,14 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header img {
+            max-width: 150px; /* Ajusta el tamaño según sea necesario */
+            height: auto;
+        }
         h1, h2 {
             text-align: center;
             color: #333;
@@ -70,6 +78,9 @@
 </head>
 <body>
     <div class="container">
+        <div class="header">
+            <img src="logo_sspc2.png" alt="Logo SSPC">
+        </div>
         <h1>Registro de Internos</h1>
         <!-- Formulario para agregar registros -->
         <div class="form-group">
@@ -85,4 +96,38 @@
             <input type="time" id="hora">
         </div>
         <div class="form-group">
-            <label for="motivo">Motivo:</label
+            <label for="motivo">Motivo:</label>
+            <input type="text" id="motivo" placeholder="Motivo">
+        </div>
+        <div class="form-group">
+            <label for="excarcelados">Excarcelados:</label>
+            <input type="number" id="excarcelados" placeholder="Excarcelados" oninput="sumarTotal()">
+        </div>
+        <div class="form-group">
+            <label for="presentes">Presentes:</label>
+            <input type="number" id="presentes" placeholder="Presentes" oninput="sumarTotal()">
+        </div>
+        <div class="form-group">
+            <label for="total">Total:</label>
+            <input type="text" id="total" readonly>
+        </div>
+        <div class="form-group">
+            <label for="custodioResponsable">Custodio Responsable:</label>
+            <input type="text" id="custodioResponsable" placeholder="Custodio Responsable">
+        </div>
+        <div class="form-group">
+            <label for="personalDGRS">Personal de la DGRS:</label>
+            <input type="text" id="personalDGRS" placeholder="Personal de la DGRS">
+        </div>
+        <!-- Botones de acción -->
+        <button onclick="guardarRegistro()">Guardar Registro</button>
+        <button onclick="exportarPDF()">Exportar PDF</button>
+        <button onclick="exportarPDFCompleto()">Exportar PDF Completo</button>
+        <h2>Registros</h2>
+        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"></select>
+        <div id="recordList"></div>
+    </div>
+    <!-- Carga del script personalizado al final del cuerpo -->
+    <script src="scripts.js"></script>
+</body>
+</html>

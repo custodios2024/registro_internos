@@ -12,7 +12,6 @@ function login() {
     }
 }
 
-
 // Función para guardar el registro
 function guardarRegistro() {
     const fecha = document.getElementById('fecha').value;
@@ -178,7 +177,7 @@ async function exportarPDFCompleto() {
     doc.text('DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES', 105, 30, { align: 'center' });
 
     doc.setFontSize(18);
-    doc.text('Registro de Internos', 105, 40, { align: 'center' });
+    doc.text('Registro de Internos Completo', 105, 40, { align: 'center' });
 
     // Establecer el formato de la tabla
     doc.setFontSize(10);
@@ -204,27 +203,3 @@ async function exportarPDFCompleto() {
 
     doc.save('Registro_Completo.pdf');
 }
-
-// Función para cerrar sesión
-function cerrarSesion() {
-    localStorage.removeItem('loggedIn');
-    window.location.href = 'index.html';
-}
-
-// Inicializa la lista de fechas en el select
-function inicializarFechas() {
-    const registros = JSON.parse(localStorage.getItem('registros')) || [];
-    const fechas = [...new Set(registros.map(registro => registro.fecha))];
-    const fechaSeleccion = document.getElementById('fechaSeleccion');
-
-    fechas.forEach(fecha => {
-        const option = document.createElement('option');
-        option.value = fecha;
-        option.textContent = fecha;
-        fechaSeleccion.appendChild(option);
-    });
-}
-
-// Llama a inicializarFechas al cargar la página
-window.onload = inicializarFechas;
-

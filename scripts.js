@@ -3,8 +3,7 @@ function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
-    // Aquí puedes añadir la lógica para validar el usuario y la contraseña
-    // Por ejemplo, comparar con un usuario y contraseña fijos
+    // Aquí puedes añadir la lógica para validar el usuario y la contraseña  
     if (username === 'admin' && password === 'admin') {
         document.getElementById('loginContainer').classList.add('hidden');
         document.getElementById('registroContainer').classList.remove('hidden');

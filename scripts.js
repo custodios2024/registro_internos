@@ -134,7 +134,7 @@ function llenarSelectorDeFechas() {
     }
 }
 
-// Función para exportar los registros filtrados por fecha a PDF
+// Función para exportar el registro filtrado por fecha a PDF en formato ticket
 async function exportarPDF() {
     const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
@@ -154,9 +154,10 @@ async function exportarPDF() {
         return;
     }
 
-    const doc = new jsPDF({ orientation: 'landscape' });
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); // Formato de A4 para una mejor extensión
     doc.setFontSize(12);
-    doc.text('Registros de Internos', 14, 15);
+    doc.text('Registro de Internos', 10, 10);
+
     doc.autoTable({
         startY: 20,
         head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']],
@@ -172,12 +173,14 @@ async function exportarPDF() {
         ]),
         theme: 'grid',
         headStyles: { fillColor: [100, 100, 255] },
-        margin: { left: 10, right: 10 }
+        margin: { left: 10, right: 10 },
+        styles: { fontSize: 10, cellPadding: 3, overflow: 'linebreak' }
     });
-    doc.save(`registros_${fechaSeleccionada}.pdf`);
+
+    doc.save(`registro_${fechaSeleccionada}.pdf`);
 }
 
-// Función para exportar todos los registros a PDF
+// Función para exportar todos los registros a PDF en formato ticket
 async function exportarPDFCompleto() {
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
 
@@ -195,9 +198,10 @@ async function exportarPDFCompleto() {
         return;
     }
 
-    const doc = new jsPDF({ orientation: 'landscape' });
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); // Formato de A4 para una mejor extensión
     doc.setFontSize(12);
-    doc.text('Todos los Registros de Internos', 14, 15);
+    doc.text('Todos los Registros de Internos', 10, 10);
+
     doc.autoTable({
         startY: 20,
         head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']],
@@ -213,8 +217,10 @@ async function exportarPDFCompleto() {
         ]),
         theme: 'grid',
         headStyles: { fillColor: [100, 100, 255] },
-        margin: { left: 10, right: 10 }
+        margin: { left: 10, right: 10 },
+        styles: { fontSize: 10, cellPadding: 3, overflow: 'linebreak' }
     });
+
     doc.save('todos_los_registros.pdf');
 }
 

@@ -86,66 +86,49 @@ function mostrarRegistrosPorFecha() {
 
     const header = table.createTHead();
     const headerRow = header.insertRow();
-    const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS'];
+    const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS', 'Centro de Internamiento'];
+    
     headers.forEach(text => {
         const th = document.createElement('th');
         th.textContent = text;
-        th.style.border = '1px solid black';
-        th.style.padding = '5px';
-        th.style.textAlign = 'center';
-        th.style.lineHeight = '1.5'; // Interlineado
+        th.style.border = '1px solid #ddd';
+        th.style.padding = '8px';
+        th.style.backgroundColor = '#f4f4f4';
         headerRow.appendChild(th);
     });
 
-    const body = table.createTBody();
-    registrosFiltrados.forEach(record => {
-        const row = body.insertRow();
-        Object.values(record).forEach(value => {
+    const tbody = table.createTBody();
+    registrosFiltrados.forEach(registro => {
+        const row = tbody.insertRow();
+        Object.values(registro).forEach(value => {
             const cell = row.insertCell();
             cell.textContent = value;
-            cell.style.border = '1px solid black';
-            cell.style.padding = '5px';
-            cell.style.textAlign = 'center';
+            cell.style.border = '1px solid #ddd';
+            cell.style.padding = '8px';
         });
     });
 
     recordList.appendChild(table);
 }
 
-// Función para llenar el selector de fechas únicas
+// Función para llenar el selector de fechas
 function llenarSelectorDeFechas() {
-    const registros = JSON.parse(localStorage.getItem('registros')) || [];
-    const fechasUnicas = [...new Set(registros.map(registro => registro.fecha))];
-
     const fechaSeleccion = document.getElementById('fechaSeleccion');
     fechaSeleccion.innerHTML = '';
 
-    fechasUnicas.forEach(fecha => {
+    const registros = JSON.parse(localStorage.getItem('registros')) || [];
+    const fechas = [...new Set(registros.map(registro => registro.fecha))];
+
+    fechas.forEach(fecha => {
         const option = document.createElement('option');
         option.value = fecha;
         option.textContent = fecha;
         fechaSeleccion.appendChild(option);
     });
-
-    // Mostrar registros para la fecha inicial seleccionada
-    if (fechasUnicas.length > 0) {
-        fechaSeleccion.value = fechasUnicas[0];
-        mostrarRegistrosPorFecha();
-    }
 }
 
-// Función para exportar el registro filtrado por fecha a PDF en formato ticket
-async function exportarPDF() {
-    const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-    const registros = JSON.parse(localStorage.getItem('registros')) || [];
-    const registrosFiltrados = registros.filter(registro => registro.fecha === fechaSeleccionada);
-
-    if (registrosFiltrados.length === 0) {
-        alert('No hay registros para exportar.');
-        return;
-    }
-
-    // Verifica que jsPDF esté disponible
+// Función para exportar a PDF
+function exportarPDF() {
     const { jsPDF } = window.jspdf;
     const { autoTable } = window.jspdf;
 
@@ -154,34 +137,47 @@ async function exportarPDF() {
         return;
     }
 
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); // Formato de A4 para una mejor extensión
-    doc.setFontSize(12);
-    doc.text('Registro de Internos', 10, 10);
+    const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
+    const registros = JSON.parse(localStorage.getItem('registros')) || [];
 
-    doc.autoTable({
-        startY: 20,
-        head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']],
-        body: registrosFiltrados.map(registro => [
-            registro.fecha,
-            registro.hora,
-            registro.motivo,
-            registro.excarcelados,
-            registro.presentes,
-            registro.total,
-            registro.custodioResponsable,
-            registro.personalDGRS
-        ]),
-        theme: 'grid',
-        headStyles: { fillColor: [100, 100, 255] },
-        margin: { left: 10, right: 10 },
-        styles: { fontSize: 10, cellPadding: 3, overflow: 'linebreak' }
-    });
+    const registrosFiltrados = registros.filter(registro => registro.fecha === fechaSeleccionada);
 
-    doc.save(`registro_${fechaSeleccionada}.pdf`);
+    if (registrosFiltrados.length === 0) {
+        alert('No hay registros para la fecha seleccionada.');
+        return;
+    }
+
+    const doc = new jsPDF('p', 'mm', 'a4');
+    doc.setFontSize(16);
+    doc.text('Registro de Internos', 14, 10);
+
+    const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS', 'Centro de Internamiento'];
+    const tableRows = registrosFiltrados.map(registro => [
+        registro.fecha,
+        registro.hora,
+        registro.motivo,
+        registro.excarcelados,
+        registro.presentes,
+        registro.total,
+        registro.custodioResponsable,
+        registro.personalDGRS,
+        registro.centroInternamiento
+    ]);
+
+    autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
+    doc.save('registro_internos.pdf');
 }
 
-// Función para exportar todos los registros a PDF en formato ticket
-async function exportarPDFCompleto() {
+// Función para exportar PDF completo
+function exportarPDFCompleto() {
+    const { jsPDF } = window.jspdf;
+    const { autoTable } = window.jspdf;
+
+    if (!jsPDF || !autoTable) {
+        alert('jsPDF no está cargado correctamente.');
+        return;
+    }
+
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
 
     if (registros.length === 0) {
@@ -189,43 +185,28 @@ async function exportarPDFCompleto() {
         return;
     }
 
-    // Verifica que jsPDF esté disponible
-    const { jsPDF } = window.jspdf;
-    const { autoTable } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    doc.setFontSize(16);
+    doc.text('Registro Completo de Internos', 14, 10);
 
-    if (!jsPDF || !autoTable) {
-        alert('jsPDF no está cargado correctamente.');
-        return;
-    }
+    const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS'];
+    const tableRows = registros.map(registro => [
+        registro.fecha,
+        registro.hora,
+        registro.motivo,
+        registro.excarcelados,
+        registro.presentes,
+        registro.total,
+        registro.custodioResponsable,
+        registro.personalDGRS
+    ]);
 
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); // Formato de A4 para una mejor extensión
-    doc.setFontSize(12);
-    doc.text('Todos los Registros de Internos', 10, 10);
-
-    doc.autoTable({
-        startY: 20,
-        head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la DGRS']],
-        body: registros.map(registro => [
-            registro.fecha,
-            registro.hora,
-            registro.motivo,
-            registro.excarcelados,
-            registro.presentes,
-            registro.total,
-            registro.custodioResponsable,
-            registro.personalDGRS
-        ]),
-        theme: 'grid',
-        headStyles: { fillColor: [100, 100, 255] },
-        margin: { left: 10, right: 10 },
-        styles: { fontSize: 10, cellPadding: 3, overflow: 'linebreak' }
-    });
-
-    doc.save('todos_los_registros.pdf');
+    autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
+    doc.save('registro_completo_internos.pdf');
 }
 
-// Inicialización cuando se carga la página
+// Inicializar la lista de fechas al cargar la página
 window.onload = function() {
     checkAuthentication();
     llenarSelectorDeFechas();
-};
+}

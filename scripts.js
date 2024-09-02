@@ -55,7 +55,7 @@ function guardarRegistro() {
     localStorage.setItem('registros', JSON.stringify(registros));
     
     alert('Registro guardado correctamente.');
-    mostrarRegistrosPorFecha(); // Actualiza la lista de registros
+    llenarSelectorDeFechas(); // Actualiza la lista de fechas en el selector
 }
 
 // Función para sumar los valores de excarcelados y presentes
@@ -127,11 +127,15 @@ function llenarSelectorDeFechas() {
         fechaSeleccion.appendChild(option);
     });
 
-    mostrarRegistrosPorFecha(); // Mostrar registros para la fecha inicial seleccionada
+    // Mostrar registros para la fecha inicial seleccionada
+    if (fechasUnicas.length > 0) {
+        fechaSeleccion.value = fechasUnicas[0];
+        mostrarRegistrosPorFecha();
+    }
 }
 
 // Función para exportar los registros filtrados por fecha a PDF
-function exportarPDF() {
+async function exportarPDF() {
     const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
     const registrosFiltrados = registros.filter(registro => registro.fecha === fechaSeleccionada);
@@ -141,7 +145,15 @@ function exportarPDF() {
         return;
     }
 
+    // Verifica que jsPDF esté disponible
     const { jsPDF } = window.jspdf;
+    const { autoTable } = window.jspdf;
+
+    if (!jsPDF || !autoTable) {
+        alert('jsPDF no está cargado correctamente.');
+        return;
+    }
+
     const doc = new jsPDF({ orientation: 'landscape' });
     doc.setFontSize(12);
     doc.text('Registros de Internos', 14, 15);
@@ -157,13 +169,16 @@ function exportarPDF() {
             registro.total,
             registro.custodioResponsable,
             registro.personalDGRS
-        ])
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [100, 100, 255] },
+        margin: { left: 10, right: 10 }
     });
     doc.save(`registros_${fechaSeleccionada}.pdf`);
 }
 
 // Función para exportar todos los registros a PDF
-function exportarPDFCompleto() {
+async function exportarPDFCompleto() {
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
 
     if (registros.length === 0) {
@@ -171,7 +186,15 @@ function exportarPDFCompleto() {
         return;
     }
 
+    // Verifica que jsPDF esté disponible
     const { jsPDF } = window.jspdf;
+    const { autoTable } = window.jspdf;
+
+    if (!jsPDF || !autoTable) {
+        alert('jsPDF no está cargado correctamente.');
+        return;
+    }
+
     const doc = new jsPDF({ orientation: 'landscape' });
     doc.setFontSize(12);
     doc.text('Todos los Registros de Internos', 14, 15);
@@ -187,7 +210,10 @@ function exportarPDFCompleto() {
             registro.total,
             registro.custodioResponsable,
             registro.personalDGRS
-        ])
+        ]),
+        theme: 'grid',
+        headStyles: { fillColor: [100, 100, 255] },
+        margin: { left: 10, right: 10 }
     });
     doc.save('todos_los_registros.pdf');
 }

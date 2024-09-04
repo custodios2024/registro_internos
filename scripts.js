@@ -80,46 +80,47 @@ function mostrarRegistrosPorFecha() {
         return;
     }
 
-    const table = document.createElement('table');
-    table.style.width = '100%';
-    table.style.borderCollapse = 'collapse';
-
-    const header = table.createTHead();
-    const headerRow = header.insertRow();
-    const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS', 'Centro de Internamiento'];
-    
-    headers.forEach(text => {
-        const th = document.createElement('th');
-        th.textContent = text;
-        th.style.border = '1px solid #ddd';
-        th.style.padding = '8px';
-        th.style.backgroundColor = '#f4f4f4';
-        headerRow.appendChild(th);
-    });
-
-    const tbody = table.createTBody();
     registrosFiltrados.forEach(registro => {
-        const row = tbody.insertRow();
-        Object.values(registro).forEach(value => {
-            const cell = row.insertCell();
-            cell.textContent = value;
-            cell.style.border = '1px solid #ddd';
-            cell.style.padding = '8px';
-        });
-    });
+        const registroDiv = document.createElement('div');
+        registroDiv.style.border = '1px solid #ddd';
+        registroDiv.style.padding = '10px';
+        registroDiv.style.marginBottom = '10px';
+        registroDiv.style.borderRadius = '4px';
+        registroDiv.style.backgroundColor = '#fff';
+        
+        const fields = [
+            { label: 'Fecha:', value: registro.fecha },
+            { label: 'Hora:', value: registro.hora },
+            { label: 'Motivo:', value: registro.motivo },
+            { label: 'Excarcelados:', value: registro.excarcelados },
+            { label: 'Presentes:', value: registro.presentes },
+            { label: 'Total:', value: registro.total },
+            { label: 'Custodio Responsable:', value: registro.custodioResponsable },
+            { label: 'Personal DGRS:', value: registro.personalDGRS },
+            { label: 'Centro de Internamiento:', value: registro.centroInternamiento }
+        ];
 
-    recordList.appendChild(table);
+        fields.forEach(field => {
+            const p = document.createElement('p');
+            p.style.margin = '0';
+            p.style.padding = '5px 0';
+            p.innerHTML = `<strong>${field.label}</strong> ${field.value}`;
+            registroDiv.appendChild(p);
+        });
+
+        recordList.appendChild(registroDiv);
+    });
 }
 
 // Función para llenar el selector de fechas
 function llenarSelectorDeFechas() {
+    const registros = JSON.parse(localStorage.getItem('registros')) || [];
+    const fechasUnicas = [...new Set(registros.map(registro => registro.fecha))];
+
     const fechaSeleccion = document.getElementById('fechaSeleccion');
     fechaSeleccion.innerHTML = '';
 
-    const registros = JSON.parse(localStorage.getItem('registros')) || [];
-    const fechas = [...new Set(registros.map(registro => registro.fecha))];
-
-    fechas.forEach(fecha => {
+    fechasUnicas.forEach(fecha => {
         const option = document.createElement('option');
         option.value = fecha;
         option.textContent = fecha;
@@ -203,10 +204,4 @@ function exportarPDFCompleto() {
 
     autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
     doc.save('registro_completo_internos.pdf');
-}
-
-// Inicializar la lista de fechas al cargar la página
-window.onload = function() {
-    checkAuthentication();
-    llenarSelectorDeFechas();
 }

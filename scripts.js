@@ -1,3 +1,31 @@
+// Función para iniciar sesión
+function login() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    // Lógica simple de autenticación
+    if (username === 'admin' && password === '2024contraseña') {
+        localStorage.setItem('loggedIn', 'true');
+        window.location.href = 'registro_internos.html'; // Redirige a la página de registro de internos
+    } else {
+        alert('Usuario o contraseña incorrectos.');
+    }
+}
+
+// Función para verificar si el usuario está autenticado
+function checkAuthentication() {
+    if (localStorage.getItem('loggedIn') !== 'true') {
+        alert('Debes iniciar sesión primero.');
+        window.location.href = 'index.html';
+    }
+}
+
+// Función para cerrar sesión
+function logout() {
+    localStorage.removeItem('loggedIn');
+    window.location.href = 'index.html';
+}
+
 // Función para guardar el registro
 function guardarRegistro() {
     const fecha = document.getElementById('fecha').value;
@@ -28,7 +56,13 @@ function guardarRegistro() {
     
     alert('Registro guardado correctamente.');
     llenarSelectorDeFechas(); // Actualiza la lista de fechas en el selector
-    mostrarRegistrosPorFecha(); // Muestra la vista previa actualizada
+}
+
+// Función para sumar los valores de excarcelados y presentes
+function sumarTotal() {
+    const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
+    const presentes = parseInt(document.getElementById('presentes').value) || 0;
+    document.getElementById('total').value = excarcelados + presentes;
 }
 
 // Función para mostrar registros por fecha
@@ -77,10 +111,26 @@ function mostrarRegistrosPorFecha() {
     recordList.appendChild(table);
 }
 
+// Función para llenar el selector de fechas
+function llenarSelectorDeFechas() {
+    const fechaSeleccion = document.getElementById('fechaSeleccion');
+    fechaSeleccion.innerHTML = '';
+
+    const registros = JSON.parse(localStorage.getItem('registros')) || [];
+    const fechas = [...new Set(registros.map(registro => registro.fecha))];
+
+    fechas.forEach(fecha => {
+        const option = document.createElement('option');
+        option.value = fecha;
+        option.textContent = fecha;
+        fechaSeleccion.appendChild(option);
+    });
+}
+
 // Función para exportar a PDF
 function exportarPDF() {
     const { jsPDF } = window.jspdf;
-    const { autoTable } = jsPDF;
+    const { autoTable } = window.jspdf;
 
     if (!jsPDF || !autoTable) {
         alert('jsPDF no está cargado correctamente.');
@@ -121,7 +171,7 @@ function exportarPDF() {
 // Función para exportar PDF completo
 function exportarPDFCompleto() {
     const { jsPDF } = window.jspdf;
-    const { autoTable } = jsPDF;
+    const { autoTable } = window.jspdf;
 
     if (!jsPDF || !autoTable) {
         alert('jsPDF no está cargado correctamente.');
@@ -135,7 +185,7 @@ function exportarPDFCompleto() {
         return;
     }
 
-    const doc = new jsPDF('landscape', 'mm', 'a4');
+    const doc = new jsPDF('p', 'mm', 'a4');
     doc.setFontSize(16);
     doc.text('Registro Completo de Internos', 14, 10);
 
@@ -159,5 +209,4 @@ function exportarPDFCompleto() {
 window.onload = function() {
     checkAuthentication();
     llenarSelectorDeFechas();
-    mostrarRegistrosPorFecha(); // Muestra los registros en la vista previa al cargar
 }

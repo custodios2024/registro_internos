@@ -130,11 +130,8 @@ function llenarSelectorDeFechas() {
 
 // Función para exportar a PDF
 function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const { autoTable } = window.jspdf;
-
-    if (!jsPDF || !autoTable) {
-        alert('jsPDF no está cargado correctamente.');
+    if (typeof jsPDF === 'undefined' || typeof jsPDF.autoTable === 'undefined') {
+        alert('jsPDF o jsPDF-AutoTable no están cargados correctamente.');
         return;
     }
 
@@ -165,17 +162,14 @@ function exportarPDF() {
         registro.centroInternamiento
     ]);
 
-    autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
+    jsPDF.autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
     doc.save('registro_internos.pdf');
 }
 
 // Función para exportar PDF completo
 function exportarPDFCompleto() {
-    const { jsPDF } = window.jspdf;
-    const { autoTable } = window.jspdf;
-
-    if (!jsPDF || !autoTable) {
-        alert('jsPDF no está cargado correctamente.');
+    if (typeof jsPDF === 'undefined' || typeof jsPDF.autoTable === 'undefined') {
+        alert('jsPDF o jsPDF-AutoTable no están cargados correctamente.');
         return;
     }
 
@@ -202,6 +196,6 @@ function exportarPDFCompleto() {
         registro.personalDGRS
     ]);
 
-    autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
+    jsPDF.autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
     doc.save('registro_completo_internos.pdf');
 }

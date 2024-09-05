@@ -143,21 +143,63 @@ function exportarPDF() {
 
     let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
 
+   function exportarPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape');
+    const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
+    let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+    let registros = registrosPorFecha[fechaSeleccionada] || [];
+
+    if (registros.length === 0) {
+        alert('No hay registros para exportar.');
+        return;
+    }
+
+    let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+
     // Agregar el logo en la parte superior derecha
     const logo = 'logo_sspc2.png'; // Asegúrate de tener la imagen disponible en el directorio adecuado
-    const logoWidth = 40; // Ajusta el tamaño del logo
-    const logoHeight = 20;
+    const logoWidth = 30; // Tamaño del logo ajustado
+    const logoHeight = 28;
     doc.addImage(logo, 'PNG', doc.internal.pageSize.getWidth() - logoWidth - 10, 10, logoWidth, logoHeight); // Ajusta la posición del logo
 
     // Centrar el texto "Centro de Internamiento"
     doc.setFontSize(18);
     const centroInternamientoX = doc.internal.pageSize.getWidth() / 2;
-    const centroInternamientoY = 30;
+    const centroInternamientoY = 50; // Ajusta la posición vertical del texto
     doc.text(centroInternamiento, centroInternamientoX, centroInternamientoY, { align: 'center' });
 
     // Agregar el título "Registro de Internos del Día"
     doc.setFontSize(16);
-    doc.text(`Registro de Internos del Día ${fechaSeleccionada}`, centroInternamientoX, 40, { align: 'center' });
+    const tituloY = centroInternamientoY + 10; // Posición vertical del título
+    doc.text(`Registro de Internos del Día ${fechaSeleccionada}`, centroInternamientoX, tituloY, { align: 'center' });
+
+    // Preparar los datos para la tabla
+    const data = registros.map(registro => [
+        registro.fecha, 
+        registro.hora, 
+        registro.motivoOrdinario, 
+        registro.motivoExtraordinario, 
+        registro.excarcelados, 
+        registro.presentes, 
+        registro.total, 
+        registro.custodioResponsable, 
+        registro.personalDGRS
+    ]);
+
+    const columns = [
+        'Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+    ];
+
+    doc.autoTable({
+        head: [columns],
+        body: data,
+        startY: tituloY + 20 // Ajusta el inicio de la tabla según el espacio ocupado por el texto
+    });
+
+    doc.save(`registro_internos_${fechaSeleccionada}.pdf`);
+}
+
 
     // Preparar los datos para la tabla
     const data = registros.map(registro => [

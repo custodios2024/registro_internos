@@ -145,22 +145,22 @@ function exportarPDF() {
         return;
     }
 
-    const doc = new jsPDF('l', 'mm', 'a4'); // Cambiado a 'l' para orientación horizontal
+    const doc = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal
 
     // Agregar logo
     const logo = new Image();
     logo.src = 'logo_sspc2.png'; // Asegúrate de que el logo esté en el directorio correcto
     logo.onload = function() {
-        doc.addImage(logo, 'PNG', 10, 10, 100, 96);
+        doc.addImage(logo, 'PNG', 10, 10, 30, 28); // Logo de 3 cm de ancho
 
         // Título del Centro de Internamiento
         const centroInternamiento = document.getElementById('centroInternamiento').value;
-        doc.setFontSize(12);
-        doc.text(centroInternamiento, doc.internal.pageSize.getWidth() / 2, 110, { align: 'center' });
+        doc.setFontSize(14);
+        doc.text(centroInternamiento, doc.internal.pageSize.getWidth() / 2 + 10, 40, { align: 'center' });
 
         // Título Registro de Internos del Día
         doc.setFontSize(16);
-        doc.text('Registro de Internos del Día', doc.internal.pageSize.getWidth() / 2, 120, { align: 'center' });
+        doc.text('Registro de Internos del Día', doc.internal.pageSize.getWidth() / 2 + 10, 50, { align: 'center' });
 
         // Configurar autoTable
         const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS', 'Centro de Internamiento'];
@@ -176,7 +176,16 @@ function exportarPDF() {
             registro.centroInternamiento
         ]);
 
-        jsPDF.autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 140 } });
+        // Ajustar el ancho de la tabla
+        jsPDF.autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            margin: { top: 60 },
+            theme: 'grid',
+            styles: { fontSize: 10 }, // Ajustar el tamaño de fuente para la tabla
+            columnWidth: 'wrap' // Ajustar el ancho de las columnas para que no estén tan largas
+        });
+
         doc.save('registro_internos.pdf');
     };
 }
@@ -195,22 +204,22 @@ function exportarPDFCompleto() {
         return;
     }
 
-    const doc = new jsPDF('l', 'mm', 'a4'); // Cambiado a 'l' para orientación horizontal
+    const doc = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal
 
     // Agregar logo
     const logo = new Image();
     logo.src = 'logo_sspc2.png'; // Asegúrate de que el logo esté en el directorio correcto
     logo.onload = function() {
-        doc.addImage(logo, 'PNG', 10, 10, 100, 96);
+        doc.addImage(logo, 'PNG', 10, 10, 30, 28); // Logo de 3 cm de ancho
 
         // Título del Centro de Internamiento
         const centroInternamiento = 'DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES'; // Puedes ajustar esto si es necesario
-        doc.setFontSize(12);
-        doc.text(centroInternamiento, doc.internal.pageSize.getWidth() / 2, 110, { align: 'center' });
+        doc.setFontSize(14);
+        doc.text(centroInternamiento, doc.internal.pageSize.getWidth() / 2 + 10, 40, { align: 'center' });
 
         // Título Registro Completo de Internos
         doc.setFontSize(16);
-        doc.text('Registro Completo de Internos', doc.internal.pageSize.getWidth() / 2, 120, { align: 'center' });
+        doc.text('Registro Completo de Internos', doc.internal.pageSize.getWidth() / 2 + 10, 50, { align: 'center' });
 
         // Configurar autoTable
         const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS'];
@@ -225,7 +234,16 @@ function exportarPDFCompleto() {
             registro.personalDGRS
         ]);
 
-        jsPDF.autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 140 } });
+        // Ajustar el ancho de la tabla
+        jsPDF.autoTable(doc, {
+            head: [tableColumn],
+            body: tableRows,
+            margin: { top: 60 },
+            theme: 'grid',
+            styles: { fontSize: 10 }, // Ajustar el tamaño de fuente para la tabla
+            columnWidth: 'wrap' // Ajustar el ancho de las columnas para que no estén tan largas
+        });
+
         doc.save('registro_completo_internos.pdf');
     };
 }

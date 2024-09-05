@@ -145,51 +145,25 @@ function exportarPDF() {
         return;
     }
 
-    const doc = new jsPDF('landscape', 'mm', 'a4'); // Orientación horizontal
-    const logo = 'logo_sspc2.png'; // Asegúrate de tener la imagen disponible en el directorio adecuado
-    const logoWidth = 40; // Tamaño ajustado del logo
-    const logoHeight = 20;
-    const margin = 10;
-    const centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
-
-    // Agregar el logo en la parte superior derecha
-    doc.addImage(logo, 'PNG', doc.internal.pageSize.getWidth() - logoWidth - margin, margin, logoWidth, logoHeight);
-
-    // Centrar el texto "Centro de Internamiento"
-    doc.setFontSize(18);
-    const centroInternamientoX = doc.internal.pageSize.getWidth() / 2;
-    const centroInternamientoY = 40;
-    doc.text(centroInternamiento, centroInternamientoX, centroInternamientoY, { align: 'center' });
-
-    // Agregar el título "Registro de Internos del Día"
+    const doc = new jsPDF('p', 'mm', 'a4');
     doc.setFontSize(16);
-    const tituloY = 50; // Ajusta la posición vertical del título
-    doc.text(`Registro de Internos del Día ${fechaSeleccionada}`, centroInternamientoX, tituloY, { align: 'center' });
+    doc.text('Registro de Internos', 14, 10);
 
-    // Preparar los datos para la tabla
-    const data = registrosFiltrados.map(registro => [
-        registro.fecha, 
-        registro.hora, 
-        registro.motivo, 
-        registro.excarcelados, 
-        registro.presentes, 
-        registro.total, 
-        registro.custodioResponsable, 
-        registro.personalDGRS, 
+    const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS', 'Centro de Internamiento'];
+    const tableRows = registrosFiltrados.map(registro => [
+        registro.fecha,
+        registro.hora,
+        registro.motivo,
+        registro.excarcelados,
+        registro.presentes,
+        registro.total,
+        registro.custodioResponsable,
+        registro.personalDGRS,
         registro.centroInternamiento
     ]);
 
-    const columns = [
-        'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.', 'Centro de Internamiento'
-    ];
-
-    doc.autoTable({
-        head: [columns],
-        body: data,
-        startY: 60 // Ajusta el inicio de la tabla según el espacio ocupado por el texto
-    });
-
-    doc.save(`registro_internos_${fechaSeleccionada}.pdf`);
+    jsPDF.autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
+    doc.save('registro_internos.pdf');
 }
 
 // Función para exportar PDF completo
@@ -206,41 +180,22 @@ function exportarPDFCompleto() {
         return;
     }
 
-    const doc = new jsPDF('landscape', 'mm', 'a4'); // Orientación horizontal
-    const logo = 'logo_sspc2.png'; // Asegúrate de tener la imagen disponible en el directorio adecuado
-    const logoWidth = 40; // Tamaño ajustado del logo
-    const logoHeight = 20;
-    const margin = 10;
-
-    // Agregar el logo en la parte superior derecha
-    doc.addImage(logo, 'PNG', doc.internal.pageSize.getWidth() - logoWidth - margin, margin, logoWidth, logoHeight);
-
-    // Agregar el título "Registro Completo de Internos"
+    const doc = new jsPDF('p', 'mm', 'a4');
     doc.setFontSize(16);
-    const tituloY = 40; // Ajusta la posición vertical del título
-    doc.text('Registro Completo de Internos', doc.internal.pageSize.getWidth() / 2, tituloY, { align: 'center' });
+    doc.text('Registro Completo de Internos', 14, 10);
 
-    // Preparar los datos para la tabla
-    const data = registros.map(registro => [
-        registro.fecha, 
-        registro.hora, 
-        registro.motivo, 
-        registro.excarcelados, 
-        registro.presentes, 
-        registro.total, 
-        registro.custodioResponsable, 
+    const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS'];
+    const tableRows = registros.map(registro => [
+        registro.fecha,
+        registro.hora,
+        registro.motivo,
+        registro.excarcelados,
+        registro.presentes,
+        registro.total,
+        registro.custodioResponsable,
         registro.personalDGRS
     ]);
 
-    const columns = [
-        'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-    ];
-
-    doc.autoTable({
-        head: [columns],
-        body: data,
-        startY: 50 // Ajusta el inicio de la tabla según el espacio ocupado por el texto
-    });
-
+    jsPDF.autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
     doc.save('registro_completo_internos.pdf');
 }

@@ -128,24 +128,9 @@ function llenarSelectorDeFechas() {
     });
 }
 
-// Función para exportar a PDF
 function exportarPDF() {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape');
-    const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-    let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-    let registros = registrosPorFecha[fechaSeleccionada] || [];
-
-    if (registros.length === 0) {
-        alert('No hay registros para exportar.');
-        return;
-    }
-
-    let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
-
-   function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape');
+    const doc = new jsPDF('landscape'); // Orientación horizontal (landscape)
     const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
     let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
     let registros = registrosPorFecha[fechaSeleccionada] || [];
@@ -159,19 +144,20 @@ function exportarPDF() {
 
     // Agregar el logo en la parte superior derecha
     const logo = 'logo_sspc2.png'; // Asegúrate de tener la imagen disponible en el directorio adecuado
-    const logoWidth = 30; // Tamaño del logo ajustado
-    const logoHeight = 28;
-    doc.addImage(logo, 'PNG', doc.internal.pageSize.getWidth() - logoWidth - 10, 10, logoWidth, logoHeight); // Ajusta la posición del logo
+    const logoWidth = 40; // Tamaño ajustado del logo
+    const logoHeight = 20;
+    const margin = 10;
+    doc.addImage(logo, 'PNG', doc.internal.pageSize.getWidth() - logoWidth - margin, margin, logoWidth, logoHeight);
 
     // Centrar el texto "Centro de Internamiento"
     doc.setFontSize(18);
     const centroInternamientoX = doc.internal.pageSize.getWidth() / 2;
-    const centroInternamientoY = 50; // Ajusta la posición vertical del texto
+    const centroInternamientoY = 40;
     doc.text(centroInternamiento, centroInternamientoX, centroInternamientoY, { align: 'center' });
 
     // Agregar el título "Registro de Internos del Día"
     doc.setFontSize(16);
-    const tituloY = centroInternamientoY + 10; // Posición vertical del título
+    const tituloY = 50; // Ajusta la posición vertical del título
     doc.text(`Registro de Internos del Día ${fechaSeleccionada}`, centroInternamientoX, tituloY, { align: 'center' });
 
     // Preparar los datos para la tabla
@@ -194,7 +180,7 @@ function exportarPDF() {
     doc.autoTable({
         head: [columns],
         body: data,
-        startY: tituloY + 20 // Ajusta el inicio de la tabla según el espacio ocupado por el texto
+        startY: 60 // Ajusta el inicio de la tabla según el espacio ocupado por el texto
     });
 
     doc.save(`registro_internos_${fechaSeleccionada}.pdf`);

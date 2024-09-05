@@ -6,7 +6,10 @@ function login() {
     // Lógica simple de autenticación
     if (username === 'admin' && password === '2024contraseña') {
         localStorage.setItem('loggedIn', 'true');
-        window.location.href = 'registro_internos.html'; // Redirige a la página de registro de internos
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('registro').style.display = 'block';
+        document.getElementById('mostrarRegistros').style.display = 'block';
+        llenarSelectorDeFechas();
     } else {
         alert('Usuario o contraseña incorrectos.');
     }
@@ -14,16 +17,24 @@ function login() {
 
 // Función para verificar si el usuario está autenticado
 function checkAuthentication() {
-    if (localStorage.getItem('loggedIn') !== 'true') {
-        alert('Debes iniciar sesión primero.');
-        window.location.href = 'index.html';
+    if (localStorage.getItem('loggedIn') === 'true') {
+        document.getElementById('login').style.display = 'none';
+        document.getElementById('registro').style.display = 'block';
+        document.getElementById('mostrarRegistros').style.display = 'block';
+        llenarSelectorDeFechas();
+    } else {
+        document.getElementById('login').style.display = 'block';
+        document.getElementById('registro').style.display = 'none';
+        document.getElementById('mostrarRegistros').style.display = 'none';
     }
 }
 
 // Función para cerrar sesión
 function logout() {
     localStorage.removeItem('loggedIn');
-    window.location.href = 'index.html';
+    document.getElementById('login').style.display = 'block';
+    document.getElementById('registro').style.display = 'none';
+    document.getElementById('mostrarRegistros').style.display = 'none';
 }
 
 // Función para guardar el registro
@@ -102,8 +113,6 @@ function mostrarRegistrosPorFecha() {
 
         fields.forEach(field => {
             const p = document.createElement('p');
-            p.style.margin = '0';
-            p.style.padding = '5px 0';
             p.innerHTML = `<strong>${field.label}</strong> ${field.value}`;
             registroDiv.appendChild(p);
         });
@@ -115,12 +124,11 @@ function mostrarRegistrosPorFecha() {
 // Función para llenar el selector de fechas
 function llenarSelectorDeFechas() {
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
-    const fechasUnicas = [...new Set(registros.map(registro => registro.fecha))];
-
     const fechaSeleccion = document.getElementById('fechaSeleccion');
-    fechaSeleccion.innerHTML = '';
+    const fechas = [...new Set(registros.map(registro => registro.fecha))];
 
-    fechasUnicas.forEach(fecha => {
+    fechaSeleccion.innerHTML = '';
+    fechas.forEach(fecha => {
         const option = document.createElement('option');
         option.value = fecha;
         option.textContent = fecha;
@@ -137,7 +145,6 @@ function exportarPDF() {
 
     const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
-
     const registrosFiltrados = registros.filter(registro => registro.fecha === fechaSeleccionada);
 
     if (registrosFiltrados.length === 0) {
@@ -147,104 +154,37 @@ function exportarPDF() {
 
     const doc = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal
 
-    // Agregar logo
-    const logo = new Image();
-    logo.src = 'logo_sspc2.png'; // Asegúrate de que el logo esté en el directorio correcto
-    logo.onload = function() {
-        doc.addImage(logo, 'PNG', 10, 10, 30, 28); // Logo de 3 cm de ancho
+    // Título del Centro de Internamiento
+    const centroInternamiento = document.getElementById('centroInternamiento').value;
+    doc.setFontSize(14);
+    const centroX = doc.internal.pageSize.getWidth() / 2; // Centro horizontal de la página
+    doc.text(centroInternamiento, centroX, 30, { align: 'center' });
 
-        // Título del Centro de Internamiento
-        const centroInternamiento = document.getElementById('centroInternamiento').value;
-        doc.setFontSize(14);
-        doc.text(centroInternamiento, doc.internal.pageSize.getWidth() / 2 + 10, 40, { align: 'center' });
+    // Título Registro de Internos del Día
+    doc.setFontSize(16);
+    doc.text('Registro de Internos del Día', centroX, 40, { align: 'center' });
 
-        // Título Registro de Internos del Día
-        doc.setFontSize(16);
-        doc.text('Registro de Internos del Día', doc.internal.pageSize.getWidth() / 2 + 10, 50, { align: 'center' });
+    // Configurar autoTable
+    const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS'];
+    const tableRows = registrosFiltrados.map(registro => [
+        registro.fecha,
+        registro.hora,
+        registro.motivo,
+        registro.excarcelados,
+        registro.presentes,
+        registro.total,
+        registro.custodioResponsable,
+        registro.personalDGRS
+    ]);
 
-        // Configurar autoTable
-        const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS', 'Centro de Internamiento'];
-        const tableRows = registrosFiltrados.map(registro => [
-            registro.fecha,
-            registro.hora,
-            registro.motivo,
-            registro.excarcelados,
-            registro.presentes,
-            registro.total,
-            registro.custodioResponsable,
-            registro.personalDGRS,
-            registro.centroInternamiento
-        ]);
+    jsPDF.autoTable(doc, {
+        head: [tableColumn],
+        body: tableRows,
+        margin: { top: 50 }, // Ajustar el margen superior si es necesario
+        theme: 'grid',
+        styles: { fontSize: 10 }, // Ajustar el tamaño de fuente para la tabla
+        columnWidth: 'wrap' // Ajustar el ancho de las columnas para que no estén tan largas
+    });
 
-        // Ajustar el ancho de la tabla
-        jsPDF.autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            margin: { top: 60 },
-            theme: 'grid',
-            styles: { fontSize: 10 }, // Ajustar el tamaño de fuente para la tabla
-            columnWidth: 'wrap' // Ajustar el ancho de las columnas para que no estén tan largas
-        });
-
-        doc.save('registro_internos.pdf');
-    };
+    doc.save('registro_internos.pdf');
 }
-
-// Función para exportar PDF completo
-function exportarPDFCompleto() {
-    if (typeof jsPDF === 'undefined' || typeof jsPDF.autoTable === 'undefined') {
-        alert('jsPDF o jsPDF-AutoTable no están cargados correctamente.');
-        return;
-    }
-
-    const registros = JSON.parse(localStorage.getItem('registros')) || [];
-
-    if (registros.length === 0) {
-        alert('No hay registros para exportar.');
-        return;
-    }
-
-    const doc = new jsPDF('l', 'mm', 'a4'); // Orientación horizontal
-
-    // Agregar logo
-    const logo = new Image();
-    logo.src = 'logo_sspc2.png'; // Asegúrate de que el logo esté en el directorio correcto
-    logo.onload = function() {
-        doc.addImage(logo, 'PNG', 10, 10, 30, 28); // Logo de 3 cm de ancho
-
-        // Título del Centro de Internamiento
-        const centroInternamiento = 'DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES'; // Puedes ajustar esto si es necesario
-        doc.setFontSize(14);
-        doc.text(centroInternamiento, doc.internal.pageSize.getWidth() / 2 + 10, 40, { align: 'center' });
-
-        // Título Registro Completo de Internos
-        doc.setFontSize(16);
-        doc.text('Registro Completo de Internos', doc.internal.pageSize.getWidth() / 2 + 10, 50, { align: 'center' });
-
-        // Configurar autoTable
-        const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS'];
-        const tableRows = registros.map(registro => [
-            registro.fecha,
-            registro.hora,
-            registro.motivo,
-            registro.excarcelados,
-            registro.presentes,
-            registro.total,
-            registro.custodioResponsable,
-            registro.personalDGRS
-        ]);
-
-        // Ajustar el ancho de la tabla
-        jsPDF.autoTable(doc, {
-            head: [tableColumn],
-            body: tableRows,
-            margin: { top: 60 },
-            theme: 'grid',
-            styles: { fontSize: 10 }, // Ajustar el tamaño de fuente para la tabla
-            columnWidth: 'wrap' // Ajustar el ancho de las columnas para que no estén tan largas
-        });
-
-        doc.save('registro_completo_internos.pdf');
-    };
-}
-

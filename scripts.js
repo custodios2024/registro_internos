@@ -128,25 +128,31 @@ function llenarSelectorDeFechas() {
     });
 }
 
+// Función para exportar a PDF
 function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape'); // Orientación horizontal (landscape)
-    const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-    let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-    let registros = registrosPorFecha[fechaSeleccionada] || [];
-
-    if (registros.length === 0) {
-        alert('No hay registros para exportar.');
+    if (typeof jsPDF === 'undefined' || typeof jsPDF.autoTable === 'undefined') {
+        alert('jsPDF o jsPDF-AutoTable no están cargados correctamente.');
         return;
     }
 
-    let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+    const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
+    const registros = JSON.parse(localStorage.getItem('registros')) || [];
 
-    // Agregar el logo en la parte superior derecha
+    const registrosFiltrados = registros.filter(registro => registro.fecha === fechaSeleccionada);
+
+    if (registrosFiltrados.length === 0) {
+        alert('No hay registros para la fecha seleccionada.');
+        return;
+    }
+
+    const doc = new jsPDF('landscape', 'mm', 'a4'); // Orientación horizontal
     const logo = 'logo_sspc2.png'; // Asegúrate de tener la imagen disponible en el directorio adecuado
     const logoWidth = 40; // Tamaño ajustado del logo
     const logoHeight = 20;
     const margin = 10;
+    const centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+
+    // Agregar el logo en la parte superior derecha
     doc.addImage(logo, 'PNG', doc.internal.pageSize.getWidth() - logoWidth - margin, margin, logoWidth, logoHeight);
 
     // Centrar el texto "Centro de Internamiento"
@@ -161,20 +167,20 @@ function exportarPDF() {
     doc.text(`Registro de Internos del Día ${fechaSeleccionada}`, centroInternamientoX, tituloY, { align: 'center' });
 
     // Preparar los datos para la tabla
-    const data = registros.map(registro => [
+    const data = registrosFiltrados.map(registro => [
         registro.fecha, 
         registro.hora, 
-        registro.motivoOrdinario, 
-        registro.motivoExtraordinario, 
+        registro.motivo, 
         registro.excarcelados, 
         registro.presentes, 
         registro.total, 
         registro.custodioResponsable, 
-        registro.personalDGRS
+        registro.personalDGRS, 
+        registro.centroInternamiento
     ]);
 
     const columns = [
-        'Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+        'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.', 'Centro de Internamiento'
     ];
 
     doc.autoTable({
@@ -186,37 +192,13 @@ function exportarPDF() {
     doc.save(`registro_internos_${fechaSeleccionada}.pdf`);
 }
 
-
-    // Preparar los datos para la tabla
-    const data = registros.map(registro => [
-        registro.fecha, 
-        registro.hora, 
-        registro.motivoOrdinario, 
-        registro.motivoExtraordinario, 
-        registro.excarcelados, 
-        registro.presentes, 
-        registro.total, 
-        registro.custodioResponsable, 
-        registro.personalDGRS
-    ]);
-
-    const columns = [
-        'Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-    ];
-
-    doc.autoTable({
-        head: [columns],
-        body: data,
-        startY: 50 // Ajusta el inicio de la tabla según el espacio ocupado por el texto
-    });
-
-    doc.save(`registro_internos_${fechaSeleccionada}.pdf`);
-}
-
 // Función para exportar PDF completo
 function exportarPDFCompleto() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape');
+    if (typeof jsPDF === 'undefined' || typeof jsPDF.autoTable === 'undefined') {
+        alert('jsPDF o jsPDF-AutoTable no están cargados correctamente.');
+        return;
+    }
+
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
 
     if (registros.length === 0) {
@@ -224,30 +206,25 @@ function exportarPDFCompleto() {
         return;
     }
 
-    let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+    const doc = new jsPDF('landscape', 'mm', 'a4'); // Orientación horizontal
+    const logo = 'logo_sspc2.png'; // Asegúrate de tener la imagen disponible en el directorio adecuado
+    const logoWidth = 40; // Tamaño ajustado del logo
+    const logoHeight = 20;
+    const margin = 10;
 
     // Agregar el logo en la parte superior derecha
-    const logo = 'logo_sspc2.png'; // Asegúrate de tener la imagen disponible en el directorio adecuado
-    const logoWidth = 40; // Ajusta el tamaño del logo
-    const logoHeight = 20;
-    doc.addImage(logo, 'PNG', doc.internal.pageSize.getWidth() - logoWidth - 10, 10, logoWidth, logoHeight); // Ajusta la posición del logo
-
-    // Centrar el texto "Centro de Internamiento"
-    doc.setFontSize(18);
-    const centroInternamientoX = doc.internal.pageSize.getWidth() / 2;
-    const centroInternamientoY = 30;
-    doc.text(centroInternamiento, centroInternamientoX, centroInternamientoY, { align: 'center' });
+    doc.addImage(logo, 'PNG', doc.internal.pageSize.getWidth() - logoWidth - margin, margin, logoWidth, logoHeight);
 
     // Agregar el título "Registro Completo de Internos"
     doc.setFontSize(16);
-    doc.text('Registro Completo de Internos', centroInternamientoX, 40, { align: 'center' });
+    const tituloY = 40; // Ajusta la posición vertical del título
+    doc.text('Registro Completo de Internos', doc.internal.pageSize.getWidth() / 2, tituloY, { align: 'center' });
 
     // Preparar los datos para la tabla
     const data = registros.map(registro => [
         registro.fecha, 
         registro.hora, 
-        registro.motivoOrdinario, 
-        registro.motivoExtraordinario, 
+        registro.motivo, 
         registro.excarcelados, 
         registro.presentes, 
         registro.total, 
@@ -256,7 +233,7 @@ function exportarPDFCompleto() {
     ]);
 
     const columns = [
-        'Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+        'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
     ];
 
     doc.autoTable({
@@ -267,4 +244,3 @@ function exportarPDFCompleto() {
 
     doc.save('registro_completo_internos.pdf');
 }
-

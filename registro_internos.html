@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Internos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.6.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
@@ -15,7 +17,6 @@
         .btn:hover { background-color: #0056b3; }
         .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
         .record-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
-        #logo { width: 100px; display: block; margin: 0 auto; }
     </style>
 </head>
 <body>
@@ -28,11 +29,10 @@
             window.location.href = 'index.html';
         }
     </script>
-
     <div class="container">
-        <img src="logo_sspc2.png" id="logo" alt="Logo SSPC">
+        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto;">
         <h3 id="centroInternamientoHeader">Centro de Internamiento:</h3>
-        <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" required>
+        <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES" required>
 
         <h2>Registro de Internos</h2>
         <form id="registroForm">
@@ -65,16 +65,14 @@
             <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
         </form>
-
         <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"></select>
+        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()">
+            <!-- Fechas se agregarán dinámicamente aquí -->
+        </select>
         <div class="record-list" id="recordList"></div>
         <pre id="output" class="output"></pre>
     </div>
 
-    <!-- Cargar jsPDF y jsPDF-AutoTable -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.6.0/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
     <script>
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
@@ -88,12 +86,12 @@
 
             let registro = {};
             formData.forEach((value, key) => {
-                if (key !== 'centroInternamiento') {
+                if (key !== 'centroInternamiento') { // Excluyendo centroInternamiento
                     registro[key] = value.toUpperCase();
                 }
             });
 
-            const fecha = registro.fecha;
+            const fecha = registro.fecha; // Extraemos la fecha del registro
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
             let registros = registrosPorFecha[fecha] || [];
 
@@ -155,10 +153,9 @@
             let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
 
             doc.setFontSize(18);
-            doc.text(centroInternamiento, 105, 20, { align: 'center' });  // Centrar el texto
+            doc.text(centroInternamiento, 105, 20, { align: 'center' });
             doc.setFontSize(16);
-            doc.text('Registro de Internos', 105, 30, { align: 'center' });
-            doc.setFontSize(12);
+            doc.text('Registro de Internos del Día', 105, 35, { align: 'center' });
 
             const data = registros.map(registro => [
                 registro.fecha, 
@@ -178,73 +175,61 @@
             doc.autoTable({
                 head: [columns],
                 body: data,
-                startY: 40,
-                styles: {
-                    lineWidth: 1.5,
-                    valign: 'middle',
-                    halign: 'center',
-                },
-                headStyles: {
-                    fillColor: '#007bff',
-                    textColor: 255,
-                    fontSize: 12,
-                    lineHeight: 1.5,
-                }
+                startY: 50,
+                margin: { horizontal: 10 },
+                styles: { cellPadding: 2, fontSize: 10 },
+                headStyles: { fillColor: [0, 123, 255] },
+                theme: 'striped'
             });
 
-            doc.save(`Registro_${fechaSeleccionada}.pdf`);
+            doc.save(`registro_internos_${fechaSeleccionada}.pdf`);
         }
 
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            let registros = [];
 
-            let startY = 20;
+            Object.values(registrosPorFecha).forEach(fechaRegistros => {
+                registros = registros.concat(fechaRegistros);
+            });
+
+            if (registros.length === 0) {
+                alert('No hay registros para exportar.');
+                return;
+            }
+
             let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
 
-            Object.keys(registrosPorFecha).forEach(fecha => {
-                let registros = registrosPorFecha[fecha];
+            doc.setFontSize(18);
+            doc.text(centroInternamiento, 105, 20, { align: 'center' });
+            doc.setFontSize(16);
+            doc.text('Registro de Internos Completo', 105, 35, { align: 'center' });
 
-                doc.setFontSize(18);
-                doc.text(centroInternamiento, 105, startY, { align: 'center' });
-                doc.setFontSize(16);
-                doc.text('Registro de Internos', 105, startY + 10, { align: 'center' });
-                doc.setFontSize(12);
+            const data = registros.map(registro => [
+                registro.fecha, 
+                registro.hora, 
+                registro.motivo, 
+                registro.excarcelados, 
+                registro.presentes, 
+                registro.total, 
+                registro.custodioResponsable, 
+                registro.personalDGRS
+            ]);
 
-                const data = registros.map(registro => [
-                    registro.fecha, 
-                    registro.hora, 
-                    registro.motivo, 
-                    registro.excarcelados, 
-                    registro.presentes, 
-                    registro.total, 
-                    registro.custodioResponsable, 
-                    registro.personalDGRS
-                ]);
+            const columns = [
+                'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+            ];
 
-                const columns = [
-                    'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-                ];
-
-                doc.autoTable({
-                    head: [columns],
-                    body: data,
-                    startY: startY + 20,
-                    styles: {
-                        lineWidth: 1.5,
-                        valign: 'middle',
-                        halign: 'center',
-                    },
-                    headStyles: {
-                        fillColor: '#007bff',
-                        textColor: 255,
-                        fontSize: 12,
-                        lineHeight: 1.5,
-                    }
-                });
-
-                startY = doc.lastAutoTable.finalY + 20;
+            doc.autoTable({
+                head: [columns],
+                body: data,
+                startY: 50,
+                margin: { horizontal: 10 },
+                styles: { cellPadding: 2, fontSize: 10 },
+                headStyles: { fillColor: [0, 123, 255] },
+                theme: 'striped'
             });
 
             doc.save('registro_internos_completo.pdf');
@@ -254,10 +239,6 @@
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
         }
-
-        document.addEventListener('DOMContentLoaded', (event) => {
-            actualizarFechasDisponibles();
-        });
     </script>
 </body>
 </html>

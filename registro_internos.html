@@ -72,6 +72,7 @@
         <pre id="output" class="output"></pre>
     </div>
 
+    <!-- Cargar jsPDF y jsPDF-AutoTable -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.6.0/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
     <script>
@@ -154,9 +155,9 @@
             let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
 
             doc.setFontSize(18);
-            doc.text(centroInternamiento, 148, 20, { align: 'center' });  // Centrar el texto
+            doc.text(centroInternamiento, 105, 20, { align: 'center' });  // Centrar el texto
             doc.setFontSize(16);
-            doc.text('Registro de Internos', 148, 30, { align: 'center' });
+            doc.text('Registro de Internos', 105, 30, { align: 'center' });
             doc.setFontSize(12);
 
             const data = registros.map(registro => [
@@ -194,12 +195,69 @@
             doc.save(`Registro_${fechaSeleccionada}.pdf`);
         }
 
+        function exportarPDFCompleto() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+
+            let startY = 20;
+            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+
+            Object.keys(registrosPorFecha).forEach(fecha => {
+                let registros = registrosPorFecha[fecha];
+
+                doc.setFontSize(18);
+                doc.text(centroInternamiento, 105, startY, { align: 'center' });
+                doc.setFontSize(16);
+                doc.text('Registro de Internos', 105, startY + 10, { align: 'center' });
+                doc.setFontSize(12);
+
+                const data = registros.map(registro => [
+                    registro.fecha, 
+                    registro.hora, 
+                    registro.motivo, 
+                    registro.excarcelados, 
+                    registro.presentes, 
+                    registro.total, 
+                    registro.custodioResponsable, 
+                    registro.personalDGRS
+                ]);
+
+                const columns = [
+                    'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+                ];
+
+                doc.autoTable({
+                    head: [columns],
+                    body: data,
+                    startY: startY + 20,
+                    styles: {
+                        lineWidth: 1.5,
+                        valign: 'middle',
+                        halign: 'center',
+                    },
+                    headStyles: {
+                        fillColor: '#007bff',
+                        textColor: 255,
+                        fontSize: 12,
+                        lineHeight: 1.5,
+                    }
+                });
+
+                startY = doc.lastAutoTable.finalY + 20;
+            });
+
+            doc.save('registro_internos_completo.pdf');
+        }
+
         function cerrarSesion() {
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
         }
 
-        actualizarFechasDisponibles();
+        document.addEventListener('DOMContentLoaded', (event) => {
+            actualizarFechasDisponibles();
+        });
     </script>
 </body>
 </html>

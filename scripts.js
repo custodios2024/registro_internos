@@ -191,15 +191,16 @@ function exportarPDF() {
     doc.save(`Registro_${fechaSeleccionada}.pdf`);
 }
 
-// Función para exportar PDF completo
-function exportarPDFCompleto() {
+// Función para exportar a PDF
+function exportarPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape');
+    const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
     let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-    let todasLasFechas = Object.keys(registrosPorFecha);
+    let registros = registrosPorFecha[fechaSeleccionada] || [];
 
-    if (todasLasFechas.length === 0) {
-        alert('No hay registros para exportar.');
+    if (registros.length === 0) {
+        alert('No hay registros para la fecha seleccionada.');
         return;
     }
 
@@ -212,45 +213,41 @@ function exportarPDFCompleto() {
     doc.setFontSize(18);
     doc.text(centroInternamiento, 140, 20, { align: 'center' });
     doc.setFontSize(16);
-    doc.text('Registro de Internos Completo', 140, 35, { align: 'center' });
+    doc.text('Registro de Internos del Día', 140, 35, { align: 'center' });
 
-    todasLasFechas.forEach(fecha => {
-        let registros = registrosPorFecha[fecha] || [];
+    const data = registros.map(registro => [
+        registro.fecha, 
+        registro.hora, 
+        registro.motivo, 
+        registro.excarcelados, 
+        registro.presentes, 
+        registro.total, 
+        registro.custodioResponsable, 
+        registro.personalDGRS
+    ]);
 
-        if (registros.length > 0) {
-            const data = registros.map(registro => [
-                registro.fecha, 
-                registro.hora, 
-                registro.motivo, 
-                registro.excarcelados, 
-                registro.presentes, 
-                registro.total, 
-                registro.custodioResponsable, 
-                registro.personalDGRS
-            ]);
+    const columns = [
+        'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+    ];
 
-            const columns = [
-                'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-            ];
-
-            doc.autoTable({
-                head: [columns],
-                body: data,
-                startY: doc.autoTable.previous ? doc.autoTable.previous.finalY + 20 : 50,
-                margin: { horizontal: 10 },
-                columnStyles: { 0: { cellWidth: 25 } },
-                theme: 'plain', // Elimina cualquier color de la tabla
-                styles: { fillColor: [255, 255, 255] } // Blanco para todas las celdas
-            });
-        }
+    doc.autoTable({
+        head: [columns],
+        body: data,
+        startY: 50,
+        margin: { horizontal: 10 },
+        columnStyles: { 0: { cellWidth: 25 } },
+        theme: 'grid', // Utilizar el tema 'grid' sin color
+        styles: {
+            fillColor: [255, 255, 255], // Color blanco para todas las celdas
+            textColor: [0, 0, 0], // Texto en negro
+            lineColor: [0, 0, 0], // Color de las líneas en negro
+            lineWidth: 0.1, // Ancho de las líneas
+        },
+        headStyles: {
+            fillColor: [255, 255, 255], // Color blanco para las celdas del encabezado
+            textColor: [0, 0, 0], // Texto del encabezado en negro
+        },
     });
 
-    doc.save('Registro_Completo.pdf');
+    doc.save(`Registro_${fechaSeleccionada}.pdf`);
 }
-
-// Llenar el selector de fechas al cargar la página
-document.addEventListener('DOMContentLoaded', () => {
-    checkAuthentication();
-    llenarSelectorDeFechas();
-});
-

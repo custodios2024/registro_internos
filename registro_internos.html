@@ -30,11 +30,11 @@
         }
     </script>
     <div class="container">
-        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto;">
-        <h3 id="centroInternamientoHeader">Centro de Internamiento:</h3>
+        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px; height: auto;">
+        <h3 id="centroInternamientoHeader" style="text-align: center; margin-top: 60px;">Centro de Internamiento:</h3>
         <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES" required>
 
-        <h2>Registro de Internos</h2>
+        <h2 style="margin-top: 20px;">Registro de Internos</h2>
         <form id="registroForm">
             <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
@@ -157,9 +157,9 @@
             doc.addImage(logo, 'PNG', 10, 10, 30, 30);
 
             doc.setFontSize(18);
-            doc.text(centroInternamiento, 130, 20, { align: 'center' });
+            doc.text(centroInternamiento, 140, 20, { align: 'center' });
             doc.setFontSize(16);
-            doc.text('Registro de Internos del Día', 130, 35, { align: 'center' });
+            doc.text('Registro de Internos del Día', 140, 35, { align: 'center' });
 
             const data = registros.map(registro => [
                 registro.fecha, 
@@ -181,33 +181,29 @@
                 body: data,
                 startY: 50,
                 margin: { horizontal: 10 },
-                styles: { cellPadding: 2, fontSize: 10, minCellWidth: 20 },
-                headStyles: { fillColor: [22, 160, 133], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
-                bodyStyles: { halign: 'center' },
-                theme: 'grid',
-                tableWidth: 'wrap',
-                columnStyles: {
-                    0: {cellWidth: 25}, // Fecha
-                    1: {cellWidth: 25}, // Hora
-                    2: {cellWidth: 35}, // Motivo
-                    3: {cellWidth: 20}, // Excarcelados
-                    4: {cellWidth: 20}, // Presentes
-                    5: {cellWidth: 20}, // Total
-                    6: {cellWidth: 50}, // Custodio Responsable
-                    7: {cellWidth: 50}, // Personal DGRS
-                },
+                styles: { fillColor: '#00bfff' }, // Color azul celeste
+                headStyles: { fillColor: '#00bfff' },
+                columnStyles: { 0: { cellWidth: 20 } },
+                theme: 'grid'
             });
 
-            doc.save(`Registro_${fechaSeleccionada}.pdf`);
+            doc.save('Registro_Internos_Dia.pdf');
         }
 
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
+            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let todasLasFechas = Object.keys(registrosPorFecha);
+            let registros = [];
 
-            if (todasLasFechas.length === 0) {
+            for (const fecha in registrosPorFecha) {
+                if (registrosPorFecha.hasOwnProperty(fecha)) {
+                    registros = registros.concat(registrosPorFecha[fecha]);
+                }
+            }
+
+            if (registros.length === 0) {
                 alert('No hay registros para exportar.');
                 return;
             }
@@ -219,54 +215,37 @@
             doc.addImage(logo, 'PNG', 10, 10, 30, 30);
 
             doc.setFontSize(18);
-            doc.text(centroInternamiento, 130, 20, { align: 'center' });
+            doc.text(centroInternamiento, 140, 20, { align: 'center' });
             doc.setFontSize(16);
-            doc.text('Registro de Internos Completo', 130, 35, { align: 'center' });
+            doc.text('Registro de Internos del Día', 140, 35, { align: 'center' });
 
-            todasLasFechas.forEach(fecha => {
-                let registros = registrosPorFecha[fecha] || [];
+            const data = registros.map(registro => [
+                registro.fecha, 
+                registro.hora, 
+                registro.motivo, 
+                registro.excarcelados, 
+                registro.presentes, 
+                registro.total, 
+                registro.custodioResponsable, 
+                registro.personalDGRS
+            ]);
 
-                if (registros.length > 0) {
-                    const data = registros.map(registro => [
-                        registro.fecha, 
-                        registro.hora, 
-                        registro.motivo, 
-                        registro.excarcelados, 
-                        registro.presentes, 
-                        registro.total, 
-                        registro.custodioResponsable, 
-                        registro.personalDGRS
-                    ]);
+            const columns = [
+                'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+            ];
 
-                    const columns = [
-                        'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-                    ];
-
-                    doc.autoTable({
-                        head: [columns],
-                        body: data,
-                        startY: doc.previousAutoTable ? doc.previousAutoTable.finalY + 10 : 50,
-                        margin: { horizontal: 10 },
-                        styles: { cellPadding: 2, fontSize: 10, minCellWidth: 20 },
-                        headStyles: { fillColor: [22, 160, 133], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
-                        bodyStyles: { halign: 'center' },
-                        theme: 'grid',
-                        tableWidth: 'wrap',
-                        columnStyles: {
-                            0: {cellWidth: 25}, // Fecha
-                            1: {cellWidth: 25}, // Hora
-                            2: {cellWidth: 35}, // Motivo
-                            3: {cellWidth: 20}, // Excarcelados
-                            4: {cellWidth: 20}, // Presentes
-                            5: {cellWidth: 20}, // Total
-                            6: {cellWidth: 50}, // Custodio Responsable
-                            7: {cellWidth: 50}, // Personal DGRS
-                        },
-                    });
-                }
+            doc.autoTable({
+                head: [columns],
+                body: data,
+                startY: 50,
+                margin: { horizontal: 10 },
+                styles: { fillColor: '#00bfff' }, // Color azul celeste
+                headStyles: { fillColor: '#00bfff' },
+                columnStyles: { 0: { cellWidth: 20 } },
+                theme: 'grid'
             });
 
-            doc.save('Registro_Completo.pdf');
+            doc.save('Registro_Internos_Completo.pdf');
         }
 
         function cerrarSesion() {
@@ -274,7 +253,9 @@
             window.location.href = 'index.html';
         }
 
-        document.addEventListener('DOMContentLoaded', actualizarFechasDisponibles);
+        document.addEventListener('DOMContentLoaded', () => {
+            actualizarFechasDisponibles();
+        });
     </script>
 </body>
 </html>

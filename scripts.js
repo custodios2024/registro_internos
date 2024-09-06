@@ -184,58 +184,6 @@ function exportarPDF() {
         startY: 50,
         margin: { horizontal: 10 },
         columnStyles: { 0: { cellWidth: 25 } },
-        theme: 'plain', // Elimina cualquier color de la tabla
-        styles: { fillColor: [255, 255, 255] } // Blanco para todas las celdas
-    });
-
-    doc.save(`Registro_${fechaSeleccionada}.pdf`);
-}
-
-// Función para exportar a PDF
-function exportarPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('landscape');
-    const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-    let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-    let registros = registrosPorFecha[fechaSeleccionada] || [];
-
-    if (registros.length === 0) {
-        alert('No hay registros para la fecha seleccionada.');
-        return;
-    }
-
-    let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
-
-    // Agregar logo
-    const logo = document.querySelector('img').src;
-    doc.addImage(logo, 'PNG', 10, 10, 30, 30);
-
-    doc.setFontSize(18);
-    doc.text(centroInternamiento, 140, 20, { align: 'center' });
-    doc.setFontSize(16);
-    doc.text('Registro de Internos del Día', 140, 35, { align: 'center' });
-
-    const data = registros.map(registro => [
-        registro.fecha, 
-        registro.hora, 
-        registro.motivo, 
-        registro.excarcelados, 
-        registro.presentes, 
-        registro.total, 
-        registro.custodioResponsable, 
-        registro.personalDGRS
-    ]);
-
-    const columns = [
-        'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-    ];
-
-    doc.autoTable({
-        head: [columns],
-        body: data,
-        startY: 50,
-        margin: { horizontal: 10 },
-        columnStyles: { 0: { cellWidth: 25 } },
         theme: 'grid', // Utilizar el tema 'grid' sin color
         styles: {
             fillColor: [255, 255, 255], // Color blanco para todas las celdas

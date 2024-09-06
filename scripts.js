@@ -183,8 +183,8 @@ function exportarPDF() {
         body: data,
         startY: 50,
         margin: { horizontal: 10 },
-        styles: { fillColor: '#00bfff' }, // Color azul celeste para el primer renglón
-        headStyles: { fillColor: '#00bfff' },
+        styles: { fillColor: '#00bfff' }, // Color azul celeste para el encabezado
+        headStyles: { fillColor: '#00bfff' }, // Color azul celeste para el encabezado
         columnStyles: { 0: { cellWidth: 25 } },
         theme: 'grid'
     });
@@ -247,8 +247,8 @@ function exportarPDFCompleto() {
                 body: data,
                 startY: doc.previousAutoTable ? doc.previousAutoTable.finalY + 20 : 50,
                 margin: { horizontal: 10 },
-                styles: { fillColor: '#00bfff' }, // Color azul celeste para el primer renglón
-                headStyles: { fillColor: '#00bfff' },
+                styles: { fillColor: '#00bfff' }, // Color azul celeste para el encabezado
+                headStyles: { fillColor: '#00bfff' }, // Color azul celeste para el encabezado
                 columnStyles: { 0: { cellWidth: 25 } },
                 theme: 'grid'
             });
@@ -265,3 +265,4 @@ function exportarPDFCompleto() {
 
     doc.save('Registro_Completo.pdf');
 }
+

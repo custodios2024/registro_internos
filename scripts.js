@@ -183,9 +183,9 @@ function exportarPDF() {
         body: data,
         startY: 50,
         margin: { horizontal: 10 },
-        styles: { fillColor: '#00bfff' }, // Color azul celeste
-        headStyles: { fillColor: '#00bfff' },
-        columnStyles: { 0: { cellWidth: 25 } },
+        styles: { cellPadding: 2, fontSize: 10, minCellWidth: 20 },
+        headStyles: { fillColor: '#00bfff', textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' }, // Encabezados con fondo azul celeste
+        bodyStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] }, // Celdas de datos con fondo blanco
         theme: 'grid'
     });
 
@@ -239,9 +239,9 @@ function exportarPDFCompleto() {
                 body: data,
                 startY: doc.previousAutoTable ? doc.previousAutoTable.finalY + 20 : 50,
                 margin: { horizontal: 10 },
-                styles: { fillColor: '#00bfff' }, // Color azul celeste
-                headStyles: { fillColor: '#00bfff' },
-                columnStyles: { 0: { cellWidth: 25 } },
+                styles: { cellPadding: 2, fontSize: 10, minCellWidth: 20 },
+                headStyles: { fillColor: '#00bfff', textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' }, // Encabezados con fondo azul celeste
+                bodyStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] }, // Celdas de datos con fondo blanco
                 theme: 'grid'
             });
         }

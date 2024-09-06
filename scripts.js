@@ -183,18 +183,9 @@ function exportarPDF() {
         body: data,
         startY: 50,
         margin: { horizontal: 10 },
-        styles: { fillColor: '#00bfff' }, // Color azul celeste para el encabezado
-        headStyles: { fillColor: '#00bfff' }, // Color azul celeste para el encabezado
         columnStyles: { 0: { cellWidth: 25 } },
-        theme: 'grid'
-    });
-
-    // Cambiar color de fondo de las filas de datos a blanco
-    doc.autoTable({
-        startY: doc.previousAutoTable.finalY,
-        body: data,
-        styles: { fillColor: [255, 255, 255] }, // Color blanco para las filas de datos
-        theme: 'grid'
+        theme: 'plain', // Elimina cualquier color de la tabla
+        styles: { fillColor: [255, 255, 255] } // Blanco para todas las celdas
     });
 
     doc.save(`Registro_${fechaSeleccionada}.pdf`);
@@ -245,24 +236,21 @@ function exportarPDFCompleto() {
             doc.autoTable({
                 head: [columns],
                 body: data,
-                startY: doc.previousAutoTable ? doc.previousAutoTable.finalY + 20 : 50,
+                startY: doc.autoTable.previous ? doc.autoTable.previous.finalY + 20 : 50,
                 margin: { horizontal: 10 },
-                styles: { fillColor: '#00bfff' }, // Color azul celeste para el encabezado
-                headStyles: { fillColor: '#00bfff' }, // Color azul celeste para el encabezado
                 columnStyles: { 0: { cellWidth: 25 } },
-                theme: 'grid'
-            });
-
-            // Cambiar color de fondo de las filas de datos a blanco
-            doc.autoTable({
-                startY: doc.previousAutoTable.finalY,
-                body: data,
-                styles: { fillColor: [255, 255, 255] }, // Color blanco para las filas de datos
-                theme: 'grid'
+                theme: 'plain', // Elimina cualquier color de la tabla
+                styles: { fillColor: [255, 255, 255] } // Blanco para todas las celdas
             });
         }
     });
 
     doc.save('Registro_Completo.pdf');
 }
+
+// Llenar el selector de fechas al cargar la página
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuthentication();
+    llenarSelectorDeFechas();
+});
 

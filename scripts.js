@@ -31,12 +31,19 @@ function guardarRegistro() {
     const fecha = document.getElementById('fecha').value;
     const hora = document.getElementById('hora').value;
     const motivo = document.getElementById('motivo').value;
-    const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
-    const presentes = parseInt(document.getElementById('presentes').value) || 0;
-    const total = excarcelados + presentes;
+    const excarcelados = parseInt(document.getElementById('excarcelados').value);
+    const presentes = parseInt(document.getElementById('presentes').value);
     const custodioResponsable = document.getElementById('custodioResponsable').value;
     const personalDGRS = document.getElementById('personalDGRS').value;
     const centroInternamiento = document.getElementById('centroInternamiento').value;
+
+    // Validar campos
+    if (!fecha || !hora || !motivo || isNaN(excarcelados) || isNaN(presentes) || excarcelados < 0 || presentes < 0 || !custodioResponsable || !personalDGRS || !centroInternamiento) {
+        alert('Por favor, complete todos los campos correctamente.');
+        return;
+    }
+
+    const total = excarcelados + presentes;
 
     const registro = {
         fecha,

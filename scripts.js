@@ -130,14 +130,10 @@ function llenarSelectorDeFechas() {
 
 // Función para exportar a PDF
 function exportarPDF() {
-    if (typeof jsPDF === 'undefined' || typeof jsPDF.autoTable === 'undefined') {
-        alert('jsPDF o jsPDF-AutoTable no están cargados correctamente.');
-        return;
-    }
-
+    const { jsPDF } = window.jspdf;
     const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
     const registros = JSON.parse(localStorage.getItem('registros')) || [];
-
+    
     const registrosFiltrados = registros.filter(registro => registro.fecha === fechaSeleccionada);
 
     if (registrosFiltrados.length === 0) {
@@ -145,57 +141,123 @@ function exportarPDF() {
         return;
     }
 
-    const doc = new jsPDF('p', 'mm', 'a4');
-    doc.setFontSize(16);
-    doc.text('Registro de Internos', 14, 10);
+    const doc = new jsPDF('landscape');
+    let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
 
-    const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS', 'Centro de Internamiento'];
-    const tableRows = registrosFiltrados.map(registro => [
-        registro.fecha,
-        registro.hora,
-        registro.motivo,
-        registro.excarcelados,
-        registro.presentes,
-        registro.total,
-        registro.custodioResponsable,
-        registro.personalDGRS,
-        registro.centroInternamiento
+    // Agregar logo
+    const logo = document.querySelector('img').src;
+    doc.addImage(logo, 'PNG', 10, 10, 30, 30);
+
+    doc.setFontSize(18);
+    doc.text(centroInternamiento, 130, 20, { align: 'center' });
+    doc.setFontSize(16);
+    doc.text('Registro de Internos del Día', 130, 35, { align: 'center' });
+
+    const data = registrosFiltrados.map(registro => [
+        registro.fecha, 
+        registro.hora, 
+        registro.motivo, 
+        registro.excarcelados, 
+        registro.presentes, 
+        registro.total, 
+        registro.custodioResponsable, 
+        registro.personalDGRS
     ]);
 
-    jsPDF.autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
-    doc.save('registro_internos.pdf');
+    const columns = [
+        'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+    ];
+
+    doc.autoTable({
+        head: [columns],
+        body: data,
+        margin: { horizontal: 10 },
+        startY: 50,
+        styles: { cellPadding: 2, fontSize: 10, minCellWidth: 20 },
+        headStyles: { fillColor: [22, 160, 133], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+        bodyStyles: { halign: 'center' },
+        theme: 'grid',
+        tableWidth: 'wrap',
+        columnStyles: {
+            0: {cellWidth: 25}, // Fecha
+            1: {cellWidth: 25}, // Hora
+            2: {cellWidth: 35}, // Motivo
+            3: {cellWidth: 20}, // Excarcelados
+            4: {cellWidth: 20}, // Presentes
+            5: {cellWidth: 20}, // Total
+            6: {cellWidth: 50}, // Custodio Responsable
+            7: {cellWidth: 50}, // Personal DGRS
+        },
+    });
+
+    doc.save(`Registro_${fechaSeleccionada}.pdf`);
 }
 
 // Función para exportar PDF completo
 function exportarPDFCompleto() {
-    if (typeof jsPDF === 'undefined' || typeof jsPDF.autoTable === 'undefined') {
-        alert('jsPDF o jsPDF-AutoTable no están cargados correctamente.');
-        return;
-    }
+    const { jsPDF } = window.jspdf;
+    let registros = JSON.parse(localStorage.getItem('registros')) || [];
+    let todasLasFechas = [...new Set(registros.map(registro => registro.fecha))];
 
-    const registros = JSON.parse(localStorage.getItem('registros')) || [];
-
-    if (registros.length === 0) {
+    if (todasLasFechas.length === 0) {
         alert('No hay registros para exportar.');
         return;
     }
 
-    const doc = new jsPDF('p', 'mm', 'a4');
+    const doc = new jsPDF('landscape');
+    let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+
+    // Agregar logo
+    const logo = document.querySelector('img').src;
+    doc.addImage(logo, 'PNG', 10, 10, 30, 30);
+
+    doc.setFontSize(18);
+    doc.text(centroInternamiento, 130, 20, { align: 'center' });
     doc.setFontSize(16);
-    doc.text('Registro Completo de Internos', 14, 10);
+    doc.text('Registro de Internos Completo', 130, 35, { align: 'center' });
 
-    const tableColumn = ['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal DGRS'];
-    const tableRows = registros.map(registro => [
-        registro.fecha,
-        registro.hora,
-        registro.motivo,
-        registro.excarcelados,
-        registro.presentes,
-        registro.total,
-        registro.custodioResponsable,
-        registro.personalDGRS
-    ]);
+    todasLasFechas.forEach(fecha => {
+        let registrosFiltrados = registros.filter(registro => registro.fecha === fecha);
 
-    jsPDF.autoTable(doc, { head: [tableColumn], body: tableRows, margin: { top: 20 } });
-    doc.save('registro_completo_internos.pdf');
+        if (registrosFiltrados.length > 0) {
+            const data = registrosFiltrados.map(registro => [
+                registro.fecha, 
+                registro.hora, 
+                registro.motivo, 
+                registro.excarcelados, 
+                registro.presentes, 
+                registro.total, 
+                registro.custodioResponsable, 
+                registro.personalDGRS
+            ]);
+
+            const columns = [
+                'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+            ];
+
+            doc.autoTable({
+                head: [columns],
+                body: data,
+                margin: { horizontal: 10 },
+                startY: doc.previousAutoTable ? doc.previousAutoTable.finalY + 20 : 50,
+                styles: { cellPadding: 2, fontSize: 10, minCellWidth: 20 },
+                headStyles: { fillColor: [22, 160, 133], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                bodyStyles: { halign: 'center' },
+                theme: 'grid',
+                tableWidth: 'wrap',
+                columnStyles: {
+                    0: {cellWidth: 25}, // Fecha
+                    1: {cellWidth: 25}, // Hora
+                    2: {cellWidth: 35}, // Motivo
+                    3: {cellWidth: 20}, // Excarcelados
+                    4: {cellWidth: 20}, // Presentes
+                    5: {cellWidth: 20}, // Total
+                    6: {cellWidth: 50}, // Custodio Responsable
+                    7: {cellWidth: 50}, // Personal DGRS
+                },
+            });
+        }
+    });
+
+    doc.save('Registro_Completo.pdf');
 }

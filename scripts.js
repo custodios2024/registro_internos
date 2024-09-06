@@ -1,144 +1,3 @@
-// Función para iniciar sesión
-function login() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    // Lógica simple de autenticación
-    if (username === 'admin' && password === '2024contraseña') {
-        localStorage.setItem('loggedIn', 'true');
-        window.location.href = 'registro_internos.html'; // Redirige a la página de registro de internos
-    } else {
-        alert('Usuario o contraseña incorrectos.');
-    }
-}
-
-// Función para verificar si el usuario está autenticado
-function checkAuthentication() {
-    if (localStorage.getItem('loggedIn') !== 'true') {
-        alert('Debes iniciar sesión primero.');
-        window.location.href = 'index.html';
-    }
-}
-
-// Función para cerrar sesión
-function logout() {
-    localStorage.removeItem('loggedIn');
-    window.location.href = 'index.html';
-}
-
-// Función para guardar el registro
-function guardarRegistro() {
-    const fecha = document.getElementById('fecha').value;
-    const hora = document.getElementById('hora').value;
-    const motivo = document.getElementById('motivo').value;
-    const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
-    const presentes = parseInt(document.getElementById('presentes').value) || 0;
-    const total = excarcelados + presentes;
-    const custodioResponsable = document.getElementById('custodioResponsable').value;
-    const personalDGRS = document.getElementById('personalDGRS').value;
-    const centroInternamiento = document.getElementById('centroInternamiento').value;
-
-    const registro = {
-        fecha,
-        hora,
-        motivo,
-        excarcelados,
-        presentes,
-        total,
-        custodioResponsable,
-        personalDGRS,
-        centroInternamiento
-    };
-
-    let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-    let registros = registrosPorFecha[fecha] || [];
-
-    if (registros.length < 10) {
-        registros.push(registro);
-        registrosPorFecha[fecha] = registros;
-        localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-        alert('Registro guardado correctamente.');
-        llenarSelectorDeFechas(); // Actualiza la lista de fechas en el selector
-        mostrarRegistrosPorFecha(); // Muestra los registros para la fecha seleccionada
-    } else {
-        alert('Se han alcanzado los 10 registros para esta fecha.');
-    }
-}
-
-// Función para sumar los valores de excarcelados y presentes
-function sumarTotal() {
-    const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
-    const presentes = parseInt(document.getElementById('presentes').value) || 0;
-    document.getElementById('total').value = excarcelados + presentes;
-}
-
-// Función para mostrar registros por fecha
-function mostrarRegistrosPorFecha() {
-    const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-    let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-    let registros = registrosPorFecha[fechaSeleccionada] || [];
-    
-    const recordList = document.getElementById('recordList');
-    recordList.innerHTML = '';
-
-    if (registros.length === 0) {
-        recordList.innerHTML = 'No se encontraron registros.';
-        return;
-    }
-
-    registros.forEach((registro, index) => {
-        const registroDiv = document.createElement('div');
-        registroDiv.style.border = '1px solid #ddd';
-        registroDiv.style.padding = '10px';
-        registroDiv.style.marginBottom = '10px';
-        registroDiv.style.borderRadius = '4px';
-        registroDiv.style.backgroundColor = '#fff';
-        
-        const fields = [
-            { label: 'Fecha:', value: registro.fecha },
-            { label: 'Hora:', value: registro.hora },
-            { label: 'Motivo:', value: registro.motivo },
-            { label: 'Excarcelados:', value: registro.excarcelados },
-            { label: 'Presentes:', value: registro.presentes },
-            { label: 'Total:', value: registro.total },
-            { label: 'Custodio Responsable:', value: registro.custodioResponsable },
-            { label: 'Personal DGRS:', value: registro.personalDGRS },
-            { label: 'Centro de Internamiento:', value: registro.centroInternamiento }
-        ];
-
-        fields.forEach(field => {
-            const p = document.createElement('p');
-            p.style.margin = '0';
-            p.style.padding = '5px 0';
-            p.innerHTML = `<strong>${field.label}</strong> ${field.value}`;
-            registroDiv.appendChild(p);
-        });
-
-        recordList.appendChild(registroDiv);
-    });
-}
-
-// Función para llenar el selector de fechas
-function llenarSelectorDeFechas() {
-    let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-    const fechasUnicas = Object.keys(registrosPorFecha);
-
-    const fechaSeleccion = document.getElementById('fechaSeleccion');
-    fechaSeleccion.innerHTML = '';
-
-    fechasUnicas.forEach(fecha => {
-        const option = document.createElement('option');
-        option.value = fecha;
-        option.textContent = fecha;
-        fechaSeleccion.appendChild(option);
-    });
-
-    if (fechaSeleccion.options.length > 0) {
-        fechaSeleccion.value = fechaSeleccion.options[fechaSeleccion.options.length - 1].value;
-        mostrarRegistrosPorFecha();
-    }
-}
-
 // Función para exportar a PDF
 function exportarPDF() {
     const { jsPDF } = window.jspdf;
@@ -183,9 +42,21 @@ function exportarPDF() {
         body: data,
         startY: 50,
         margin: { horizontal: 10 },
-        styles: { cellPadding: 2, fontSize: 10, minCellWidth: 20 },
-        headStyles: { fillColor: '#00bfff', textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' }, // Encabezados con fondo azul celeste
-        bodyStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] }, // Celdas de datos con fondo blanco
+        headStyles: {
+            fillColor: '#00bfff', // Color azul celeste para encabezados
+            textColor: [255, 255, 255], // Color del texto en los encabezados
+            fontStyle: 'bold',
+            halign: 'center'
+        },
+        styles: {
+            cellPadding: 2,
+            fontSize: 10,
+            minCellWidth: 20,
+            halign: 'center'
+        },
+        bodyStyles: {
+            fillColor: [255, 255, 255] // Fondo blanco para celdas de datos
+        },
         theme: 'grid'
     });
 
@@ -239,9 +110,21 @@ function exportarPDFCompleto() {
                 body: data,
                 startY: doc.previousAutoTable ? doc.previousAutoTable.finalY + 20 : 50,
                 margin: { horizontal: 10 },
-                styles: { cellPadding: 2, fontSize: 10, minCellWidth: 20 },
-                headStyles: { fillColor: '#00bfff', textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' }, // Encabezados con fondo azul celeste
-                bodyStyles: { fillColor: [255, 255, 255], textColor: [0, 0, 0] }, // Celdas de datos con fondo blanco
+                headStyles: {
+                    fillColor: '#00bfff', // Color azul celeste para encabezados
+                    textColor: [255, 255, 255], // Color del texto en los encabezados
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                styles: {
+                    cellPadding: 2,
+                    fontSize: 10,
+                    minCellWidth: 20,
+                    halign: 'center'
+                },
+                bodyStyles: {
+                    fillColor: [255, 255, 255] // Fondo blanco para celdas de datos
+                },
                 theme: 'grid'
             });
         }

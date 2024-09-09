@@ -111,14 +111,15 @@
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
             let registros = registrosPorFecha[fecha] || [];
 
-            if (registros.length < 10) {
+            if (registros.length === 0) {
                 registros.push(registro);
                 registrosPorFecha[fecha] = registros;
                 localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
+                alert('Registro guardado con éxito.');
                 actualizarFechasDisponibles();
                 mostrarRegistrosPorFecha();
             } else {
-                alert('Se han alcanzado los 10 registros para esta fecha.');
+                alert('Ya se ha guardado un registro para esta fecha. No se pueden guardar más registros.');
             }
         }
 

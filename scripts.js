@@ -186,23 +186,22 @@ function exportarPDF() {
     ];
 
     doc.autoTable({
-        head: [columns],
-        body: data,
-        startY: 50,
-        margin: { horizontal: 10 },
-        columnStyles: { 0: { cellWidth: 25 } },
-        theme: 'grid', // Utilizar el tema 'grid' sin color
-        styles: {
-            fillColor: [255, 255, 255], // Color blanco para todas las celdas
-            textColor: [0, 0, 0], // Texto en negro
-            lineColor: [0, 0, 0], // Color de las líneas en negro
-            lineWidth: 0.1, // Ancho de las líneas
-        },
-        headStyles: {
-            fillColor: [255, 255, 255], // Color blanco para las celdas del encabezado
-            textColor: [0, 0, 0], // Texto del encabezado en negro
-        },
-    });
+    head: [columns],
+    body: data,
+    startY: 50,
+    margin: { horizontal: 10 },
+    columnStyles: { 0: { cellWidth: 25 } },
+    theme: 'plain', // Utilizar el tema 'plain' para evitar estilos predeterminados
+    styles: {
+        fillColor: [255, 255, 255], // Color blanco para todas las celdas
+        textColor: [0, 0, 0], // Texto en negro
+        lineColor: [0, 0, 0], // Color de las líneas en negro
+        lineWidth: 0.1, // Ancho de las líneas
+    },
+    headStyles: {
+        fillColor: [255, 255, 255], // Color blanco para las celdas del encabezado
+        textColor: [0, 0, 0], // Texto del encabezado en negro
+    },
+});
 
-    doc.save(`Registro_${fechaSeleccionada}.pdf`);
-}
+doc.save(`Registro_${fechaSeleccionada}.pdf`);

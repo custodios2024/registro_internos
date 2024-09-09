@@ -181,29 +181,28 @@
                 body: data,
                 startY: 50,
                 margin: { horizontal: 10 },
-                styles: { fillColor: '#00bfff' }, // Color azul celeste
-                headStyles: { fillColor: '#00bfff' },
-                columnStyles: { 0: { cellWidth: 20 } },
-                theme: 'grid'
+                theme: 'plain', // Utiliza tema sin color
+                styles: {
+                    fillColor: [255, 255, 255], // Color blanco para todas las celdas
+                    textColor: [0, 0, 0], // Texto en negro
+                    lineColor: [0, 0, 0], // Color de las líneas en negro
+                    lineWidth: 0.1, // Ancho de las líneas
+                },
+                headStyles: {
+                    fillColor: [255, 255, 255], // Color blanco para las celdas del encabezado
+                    textColor: [0, 0, 0], // Texto del encabezado en negro
+                }
             });
 
-            doc.save('Registro_Internos_Dia.pdf');
+            doc.save(`RegistroInternos_${fechaSeleccionada}.pdf`);
         }
 
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = [];
 
-            for (const fecha in registrosPorFecha) {
-                if (registrosPorFecha.hasOwnProperty(fecha)) {
-                    registros = registros.concat(registrosPorFecha[fecha]);
-                }
-            }
-
-            if (registros.length === 0) {
+            if (Object.keys(registrosPorFecha).length === 0) {
                 alert('No hay registros para exportar.');
                 return;
             }
@@ -219,44 +218,45 @@
             doc.setFontSize(16);
             doc.text('Registro de Internos del Día', 140, 35, { align: 'center' });
 
-            const data = registros.map(registro => [
-                registro.fecha, 
-                registro.hora, 
-                registro.motivo, 
-                registro.excarcelados, 
-                registro.presentes, 
-                registro.total, 
-                registro.custodioResponsable, 
-                registro.personalDGRS
-            ]);
+            let allData = [];
+            Object.keys(registrosPorFecha).forEach(fecha => {
+                let registros = registrosPorFecha[fecha] || [];
+                let fechaData = registros.map(registro => [
+                    registro.fecha, 
+                    registro.hora, 
+                    registro.motivo, 
+                    registro.excarcelados, 
+                    registro.presentes, 
+                    registro.total, 
+                    registro.custodioResponsable, 
+                    registro.personalDGRS
+                ]);
+                allData = allData.concat(fechaData);
+            });
 
             const columns = [
                 'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
             ];
 
-           doc.autoTable({
-    head: [columns],
-    body: data,
-    startY: 50,
-    margin: { horizontal: 10 },
-    theme: 'plain', // Utiliza el tema 'plain' para evitar estilos predeterminados
-    styles: {
-        fillColor: [255, 255, 255], // Color blanco para todas las celdas
-        textColor: [0, 0, 0], // Texto en negro
-        lineColor: [0, 0, 0], // Color de las líneas en negro
-        lineWidth: 0.1, // Ancho de las líneas
-    },
-    headStyles: {
-        fillColor: [255, 255, 255], // Color blanco para las celdas del encabezado
-        textColor: [0, 0, 0], // Texto del encabezado en negro
-    },
-    columnStyles: { 
-        0: { cellWidth: 20 } 
-    },
-});
+            doc.autoTable({
+                head: [columns],
+                body: allData,
+                startY: 50,
+                margin: { horizontal: 10 },
+                theme: 'plain', // Utiliza tema sin color
+                styles: {
+                    fillColor: [255, 255, 255], // Color blanco para todas las celdas
+                    textColor: [0, 0, 0], // Texto en negro
+                    lineColor: [0, 0, 0], // Color de las líneas en negro
+                    lineWidth: 0.1, // Ancho de las líneas
+                },
+                headStyles: {
+                    fillColor: [255, 255, 255], // Color blanco para las celdas del encabezado
+                    textColor: [0, 0, 0], // Texto del encabezado en negro
+                }
+            });
 
-doc.save('Registro_Internos_Completo.pdf');
-
+            doc.save('RegistroInternos_Completo.pdf');
         }
 
         function cerrarSesion() {
@@ -264,7 +264,7 @@ doc.save('Registro_Internos_Completo.pdf');
             window.location.href = 'index.html';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             actualizarFechasDisponibles();
         });
     </script>

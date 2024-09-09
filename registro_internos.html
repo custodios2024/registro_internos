@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+
+    <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -74,19 +75,7 @@
     </div>
 
     <script>
-        function validarCampos() {
-            const form = document.getElementById('registroForm');
-            for (let element of form.elements) {
-                if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
-                    if (!element.value.trim()) {
-                        alert('Por favor, complete todos los campos.');
-                        element.focus();
-                        return false;
-                    }
-                }
-            }
-            return true;
-        }
+        let registroGuardado = false;
 
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
@@ -95,8 +84,6 @@
         }
 
         function guardarRegistro() {
-            if (!validarCampos()) return;
-
             const form = document.getElementById('registroForm');
             const formData = new FormData(form);
 
@@ -108,18 +95,30 @@
             });
 
             const fecha = registro.fecha; // Extraemos la fecha del registro
+            const hora = registro.hora; // Extraemos la hora del registro
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
             let registros = registrosPorFecha[fecha] || [];
 
-            if (registros.length === 0) {
-                registros.push(registro);
-                registrosPorFecha[fecha] = registros;
-                localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-                alert('Registro guardado con éxito.');
-                actualizarFechasDisponibles();
-                mostrarRegistrosPorFecha();
+            // Verifica si ya se guardó un registro con la misma hora
+            if (registros.some(reg => reg.hora === hora)) {
+                alert('Ya se ha guardado un registro con esta hora. No se puede guardar el mismo registro nuevamente.');
+                return;
+            }
+
+            if (registros.length < 10) {
+                if (!registroGuardado) {
+                    registros.push(registro);
+                    registrosPorFecha[fecha] = registros;
+                    localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
+                    registroGuardado = true;
+                    alert('Registro guardado con éxito.');
+                    actualizarFechasDisponibles();
+                    mostrarRegistrosPorFecha();
+                } else {
+                    alert('Ya se ha guardado un registro para este día. No se pueden guardar más registros.');
+                }
             } else {
-                alert('Ya se ha guardado un registro para esta fecha. No se pueden guardar más registros.');
+                alert('Se han alcanzado los 10 registros para esta fecha.');
             }
         }
 
@@ -156,8 +155,6 @@
         }
 
         function exportarPDF() {
-            if (!validarCampos()) return;
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
@@ -180,31 +177,27 @@
             doc.setFontSize(16);
             doc.text('Registro de Internos del Día', 140, 35, { align: 'center' });
 
-            const data = registros.map(registro => [
-                registro.fecha, 
-                registro.hora, 
-                registro.motivo, 
-                registro.excarcelados, 
-                registro.presentes, 
-                registro.total, 
-                registro.custodioResponsable, 
-                registro.personalDGRS
-            ]);
-
             doc.autoTable({
                 head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
-                body: data,
+                body: registros.map(reg => [
+                    reg.fecha,
+                    reg.hora,
+                    reg.motivo,
+                    reg.excarcelados,
+                    reg.presentes,
+                    reg.total,
+                    reg.custodioResponsable,
+                    reg.personalDGRS
+                ]),
                 startY: 50,
-                theme: 'plain',
-                styles: { fontSize: 10 }
+                margin: { top: 40 },
+                styles: { cellPadding: 2, fontSize: 8, valign: 'middle', halign: 'center' }
             });
 
             doc.save('registro_del_dia.pdf');
         }
 
         function exportarPDFCompleto() {
-            if (!validarCampos()) return;
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
@@ -227,23 +220,21 @@
             doc.setFontSize(16);
             doc.text('Registro Completo', 140, 35, { align: 'center' });
 
-            const data = registros.map(registro => [
-                registro.fecha, 
-                registro.hora, 
-                registro.motivo, 
-                registro.excarcelados, 
-                registro.presentes, 
-                registro.total, 
-                registro.custodioResponsable, 
-                registro.personalDGRS
-            ]);
-
             doc.autoTable({
                 head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
-                body: data,
+                body: registros.map(reg => [
+                    reg.fecha,
+                    reg.hora,
+                    reg.motivo,
+                    reg.excarcelados,
+                    reg.presentes,
+                    reg.total,
+                    reg.custodioResponsable,
+                    reg.personalDGRS
+                ]),
                 startY: 50,
-                theme: 'plain',
-                styles: { fontSize: 10 }
+                margin: { top: 40 },
+                styles: { cellPadding: 2, fontSize: 8, valign: 'middle', halign: 'center' }
             });
 
             doc.save('registro_completo.pdf');
@@ -254,7 +245,9 @@
             window.location.href = 'index.html';
         }
 
-        document.addEventListener('DOMContentLoaded', actualizarFechasDisponibles);
+        document.addEventListener('DOMContentLoaded', function() {
+            actualizarFechasDisponibles();
+        });
     </script>
 </body>
 </html>

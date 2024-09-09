@@ -17,6 +17,7 @@
         .btn:hover { background-color: #0056b3; }
         .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
         .record-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
+        .select-container { margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -68,6 +69,12 @@
 
             <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
             <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+            <div class="select-container">
+                <label for="fechasSeleccion">Selecciona Fechas para Exportar al PDF Completo:</label>
+                <select id="fechasSeleccion" multiple onchange="mostrarRegistrosPorFechas()">
+                    <!-- Fechas se agregarán dinámicamente aquí -->
+                </select>
+            </div>
             <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
             <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
         </form>
@@ -144,11 +151,28 @@
             });
         }
 
-        function actualizarFechasDisponibles() {
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            const fechaSeleccion = document.getElementById('fechaSeleccion');
-            fechaSeleccion.innerHTML = '';
+        function mostrarRegistrosPorFechas() {
+            const fechasSeleccionadas = Array.from(document.getElementById('fechasSeleccion').options)
+                .filter(option => option.selected)
+                .map(option => option.value);
 
+            if (fechasSeleccionadas.length === 0) {
+                alert('Por favor, selecciona al menos una fecha.');
+                return;
+            }
+
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            let registros = fechasSeleccionadas.flatMap(fecha => registrosPorFecha[fecha] || []);
+            generarPDFCompleto(registros);
+        }
+
+        function actualizarFechasDisponibles() {
+            const fechaSeleccion = document.getElementById('fechaSeleccion');
+            const fechasSeleccion = document.getElementById('fechasSeleccion');
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+
+            // Actualizar fechaSeleccion
+            fechaSeleccion.innerHTML = '';
             Object.keys(registrosPorFecha).forEach(fecha => {
                 const option = document.createElement('option');
                 option.value = fecha;
@@ -156,63 +180,20 @@
                 fechaSeleccion.appendChild(option);
             });
 
-            if (fechaSeleccion.options.length > 0) {
-                fechaSeleccion.value = fechaSeleccion.options[fechaSeleccion.options.length - 1].value;
-                mostrarRegistrosPorFecha();
-            }
-        }
-
-        function exportarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('landscape');
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fechaSeleccionada] || [];
-
-            if (registros.length === 0) {
-                alert('No hay registros para exportar.');
-                return;
-            }
-
-            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
-
-            // Agregar logo
-            const logo = document.querySelector('img').src;
-            doc.addImage(logo, 'PNG', 10, 10, 30, 30);
-
-            doc.setFontSize(18);
-            doc.text(centroInternamiento, 140, 20, { align: 'center' });
-            doc.setFontSize(16);
-            doc.text('Registro de Internos del Día', 140, 35, { align: 'center' });
-
-            doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
-                body: registros.map(reg => [
-                    reg.fecha,
-                    reg.hora,
-                    reg.motivo,
-                    reg.excarceladosH,
-                    reg.excarceladosM,
-                    reg.presentesH,
-                    reg.presentesM,
-                    reg.total,
-                    reg.custodioResponsable,
-                    reg.personalDGRS
-                ]),
-                startY: 50,
-                margin: { top: 40 },
-                styles: { cellPadding: 2, fontSize: 8, valign: 'middle', halign: 'center' }
+            // Actualizar fechasSeleccion
+            fechasSeleccion.innerHTML = '';
+            Object.keys(registrosPorFecha).forEach(fecha => {
+                const option = document.createElement('option');
+                option.value = fecha;
+                option.text = fecha;
+                option.selected = false; // Inicia sin fechas seleccionadas
+                fechasSeleccion.appendChild(option);
             });
-
-            doc.save('registro_del_dia.pdf');
         }
 
-        function exportarPDFCompleto() {
+        function generarPDFCompleto(registros) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fechaSeleccionada] || [];
 
             if (registros.length === 0) {
                 alert('No hay registros para exportar.');
@@ -252,6 +233,51 @@
             doc.save('registro_completo.pdf');
         }
 
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            let registros = registrosPorFecha[fechaSeleccionada] || [];
+
+            if (registros.length === 0) {
+                alert('No hay registros para exportar.');
+                return;
+            }
+
+            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+
+            // Agregar logo
+            const logo = document.querySelector('img').src;
+            doc.addImage(logo, 'PNG', 10, 10, 30, 30);
+
+            doc.setFontSize(18);
+            doc.text(centroInternamiento, 140, 20, { align: 'center' });
+            doc.setFontSize(16);
+            doc.text('Registro del Día', 140, 35, { align: 'center' });
+
+            doc.autoTable({
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
+                body: registros.map(reg => [
+                    reg.fecha,
+                    reg.hora,
+                    reg.motivo,
+                    reg.excarceladosH,
+                    reg.excarceladosM,
+                    reg.presentesH,
+                    reg.presentesM,
+                    reg.total,
+                    reg.custodioResponsable,
+                    reg.personalDGRS
+                ]),
+                startY: 50,
+                margin: { top: 40 },
+                styles: { cellPadding: 2, fontSize: 8, valign: 'middle', halign: 'center' }
+            });
+
+            doc.save('registro_del_dia.pdf');
+        }
+
         function cerrarSesion() {
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
@@ -263,3 +289,4 @@
     </script>
 </body>
 </html>
+

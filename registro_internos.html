@@ -1,5 +1,4 @@
-
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -46,11 +45,17 @@
             <label for="motivo">Motivo:</label>
             <input type="text" id="motivo" name="motivo" required>
 
-            <label for="excarcelados">Excarcelados:</label>
-            <input type="number" id="excarcelados" name="excarcelados" required>
+            <label for="excarceladosH">Excarcelados (Hombres):</label>
+            <input type="number" id="excarceladosH" name="excarceladosH" required oninput="sumarTotal()">
 
-            <label for="presentes">Presentes:</label>
-            <input type="number" id="presentes" name="presentes" required oninput="sumarTotal()">
+            <label for="excarceladosM">Excarcelados (Mujeres):</label>
+            <input type="number" id="excarceladosM" name="excarceladosM" required oninput="sumarTotal()">
+
+            <label for="presentesH">Presentes (Hombres):</label>
+            <input type="number" id="presentesH" name="presentesH" required oninput="sumarTotal()">
+
+            <label for="presentesM">Presentes (Mujeres):</label>
+            <input type="number" id="presentesM" name="presentesM" required oninput="sumarTotal()">
 
             <label for="total">Total:</label>
             <input type="number" id="total" name="total" required readonly>
@@ -78,9 +83,12 @@
         let registroGuardado = false;
 
         function sumarTotal() {
-            const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
-            const presentes = parseInt(document.getElementById('presentes').value) || 0;
-            document.getElementById('total').value = excarcelados + presentes;
+            const excarceladosH = parseInt(document.getElementById('excarceladosH').value) || 0;
+            const excarceladosM = parseInt(document.getElementById('excarceladosM').value) || 0;
+            const presentesH = parseInt(document.getElementById('presentesH').value) || 0;
+            const presentesM = parseInt(document.getElementById('presentesM').value) || 0;
+
+            document.getElementById('total').value = excarceladosH + excarceladosM + presentesH + presentesM;
         }
 
         function guardarRegistro() {
@@ -178,13 +186,15 @@
             doc.text('Registro de Internos del Día', 140, 35, { align: 'center' });
 
             doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
                 body: registros.map(reg => [
                     reg.fecha,
                     reg.hora,
                     reg.motivo,
-                    reg.excarcelados,
-                    reg.presentes,
+                    reg.excarceladosH,
+                    reg.excarceladosM,
+                    reg.presentesH,
+                    reg.presentesM,
                     reg.total,
                     reg.custodioResponsable,
                     reg.personalDGRS
@@ -221,13 +231,15 @@
             doc.text('Registro Completo', 140, 35, { align: 'center' });
 
             doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
                 body: registros.map(reg => [
                     reg.fecha,
                     reg.hora,
                     reg.motivo,
-                    reg.excarcelados,
-                    reg.presentes,
+                    reg.excarceladosH,
+                    reg.excarceladosM,
+                    reg.presentesH,
+                    reg.presentesM,
                     reg.total,
                     reg.custodioResponsable,
                     reg.personalDGRS

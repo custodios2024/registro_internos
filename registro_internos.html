@@ -74,6 +74,20 @@
     </div>
 
     <script>
+        function validarCampos() {
+            const form = document.getElementById('registroForm');
+            for (let element of form.elements) {
+                if (element.tagName === 'INPUT' || element.tagName === 'SELECT') {
+                    if (!element.value.trim()) {
+                        alert('Por favor, complete todos los campos.');
+                        element.focus();
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
         function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
             const presentes = parseInt(document.getElementById('presentes').value) || 0;
@@ -81,6 +95,8 @@
         }
 
         function guardarRegistro() {
+            if (!validarCampos()) return;
+
             const form = document.getElementById('registroForm');
             const formData = new FormData(form);
 
@@ -139,6 +155,8 @@
         }
 
         function exportarPDF() {
+            if (!validarCampos()) return;
+
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
@@ -172,37 +190,27 @@
                 registro.personalDGRS
             ]);
 
-            const columns = [
-                'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-            ];
-
             doc.autoTable({
-                head: [columns],
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
                 body: data,
                 startY: 50,
-                margin: { horizontal: 10 },
-                theme: 'plain', // Utiliza tema sin color
-                styles: {
-                    fillColor: [255, 255, 255], // Color blanco para todas las celdas
-                    textColor: [0, 0, 0], // Texto en negro
-                    lineColor: [0, 0, 0], // Color de las líneas en negro
-                    lineWidth: 0.1, // Ancho de las líneas
-                },
-                headStyles: {
-                    fillColor: [255, 255, 255], // Color blanco para las celdas del encabezado
-                    textColor: [0, 0, 0], // Texto del encabezado en negro
-                }
+                theme: 'plain',
+                styles: { fontSize: 10 }
             });
 
-            doc.save(`RegistroInternos_${fechaSeleccionada}.pdf`);
+            doc.save('registro_del_dia.pdf');
         }
 
         function exportarPDFCompleto() {
+            if (!validarCampos()) return;
+
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
+            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            let registros = registrosPorFecha[fechaSeleccionada] || [];
 
-            if (Object.keys(registrosPorFecha).length === 0) {
+            if (registros.length === 0) {
                 alert('No hay registros para exportar.');
                 return;
             }
@@ -216,47 +224,28 @@
             doc.setFontSize(18);
             doc.text(centroInternamiento, 140, 20, { align: 'center' });
             doc.setFontSize(16);
-            doc.text('Registro de Internos del Día', 140, 35, { align: 'center' });
+            doc.text('Registro Completo', 140, 35, { align: 'center' });
 
-            let allData = [];
-            Object.keys(registrosPorFecha).forEach(fecha => {
-                let registros = registrosPorFecha[fecha] || [];
-                let fechaData = registros.map(registro => [
-                    registro.fecha, 
-                    registro.hora, 
-                    registro.motivo, 
-                    registro.excarcelados, 
-                    registro.presentes, 
-                    registro.total, 
-                    registro.custodioResponsable, 
-                    registro.personalDGRS
-                ]);
-                allData = allData.concat(fechaData);
-            });
-
-            const columns = [
-                'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
-            ];
+            const data = registros.map(registro => [
+                registro.fecha, 
+                registro.hora, 
+                registro.motivo, 
+                registro.excarcelados, 
+                registro.presentes, 
+                registro.total, 
+                registro.custodioResponsable, 
+                registro.personalDGRS
+            ]);
 
             doc.autoTable({
-                head: [columns],
-                body: allData,
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
+                body: data,
                 startY: 50,
-                margin: { horizontal: 10 },
-                theme: 'plain', // Utiliza tema sin color
-                styles: {
-                    fillColor: [255, 255, 255], // Color blanco para todas las celdas
-                    textColor: [0, 0, 0], // Texto en negro
-                    lineColor: [0, 0, 0], // Color de las líneas en negro
-                    lineWidth: 0.1, // Ancho de las líneas
-                },
-                headStyles: {
-                    fillColor: [255, 255, 255], // Color blanco para las celdas del encabezado
-                    textColor: [0, 0, 0], // Texto del encabezado en negro
-                }
+                theme: 'plain',
+                styles: { fontSize: 10 }
             });
 
-            doc.save('RegistroInternos_Completo.pdf');
+            doc.save('registro_completo.pdf');
         }
 
         function cerrarSesion() {
@@ -264,9 +253,7 @@
             window.location.href = 'index.html';
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            actualizarFechasDisponibles();
-        });
+        document.addEventListener('DOMContentLoaded', actualizarFechasDisponibles);
     </script>
 </body>
 </html>

@@ -234,18 +234,29 @@
                 'Fecha', 'Hora', 'Motivo', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
             ];
 
-            doc.autoTable({
-                head: [columns],
-                body: data,
-                startY: 50,
-                margin: { horizontal: 10 },
-                styles: { fillColor: '#00bfff' }, // Color azul celeste
-                headStyles: { fillColor: '#00bfff' },
-                columnStyles: { 0: { cellWidth: 20 } },
-                theme: 'grid'
-            });
+           doc.autoTable({
+    head: [columns],
+    body: data,
+    startY: 50,
+    margin: { horizontal: 10 },
+    theme: 'plain', // Utiliza el tema 'plain' para evitar estilos predeterminados
+    styles: {
+        fillColor: [255, 255, 255], // Color blanco para todas las celdas
+        textColor: [0, 0, 0], // Texto en negro
+        lineColor: [0, 0, 0], // Color de las líneas en negro
+        lineWidth: 0.1, // Ancho de las líneas
+    },
+    headStyles: {
+        fillColor: [255, 255, 255], // Color blanco para las celdas del encabezado
+        textColor: [0, 0, 0], // Texto del encabezado en negro
+    },
+    columnStyles: { 
+        0: { cellWidth: 20 } 
+    },
+});
 
-            doc.save('Registro_Internos_Completo.pdf');
+doc.save('Registro_Internos_Completo.pdf');
+
         }
 
         function cerrarSesion() {

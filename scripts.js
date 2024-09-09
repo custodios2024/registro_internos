@@ -205,3 +205,4 @@ function exportarPDF() {
 });
 
 doc.save(`Registro_${fechaSeleccionada}.pdf`);
+}

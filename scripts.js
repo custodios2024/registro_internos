@@ -206,3 +206,25 @@ function exportarPDF() {
 
 doc.save(`Registro_${fechaSeleccionada}.pdf`);
 }
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD1d3Un7HltXCFk_WssjyYmZabH0JRxACM",
+  authDomain: "dema-26548.firebaseapp.com",
+  databaseURL: "https://dema-26548-default-rtdb.firebaseio.com",
+  projectId: "dema-26548",
+  storageBucket: "dema-26548.appspot.com",
+  messagingSenderId: "982226404755",
+  appId: "1:982226404755:web:54430def1cc9550e835466",
+  measurementId: "G-VSBV5V5QWM"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);

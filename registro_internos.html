@@ -78,12 +78,29 @@
         async function guardarPDFCompleto() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'pt', 'a4');
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const motivo = document.getElementById('motivo').value;
+            const excarcelados = document.getElementById('excarcelados').value;
+            const presentes = document.getElementById('presentes').value;
+            const total = document.getElementById('total').value;
+            const custodio = document.getElementById('custodio').value;
+            const personal = document.getElementById('personal').value;
+            const centro = document.getElementById('centro').value;
 
             // Agregar contenido al PDF completo
-            doc.text('Registro Completo', 14, 30);
-            // Aquí agregar el resto de los datos que quieres incluir en el PDF completo
+            doc.text(`Centro de Internamiento: ${centro}`, 14, 30);
+            doc.text('Registro Completo', 14, 50);
+            doc.text(`Fecha: ${fecha}`, 14, 70);
+            doc.text(`Hora: ${hora}`, 14, 90);
+            doc.text(`Motivo: ${motivo}`, 14, 110);
+            doc.text(`Excarcelados: ${excarcelados}`, 14, 130);
+            doc.text(`Presentes: ${presentes}`, 14, 150);
+            doc.text(`Total: ${total}`, 14, 170);
+            doc.text(`Custodio Responsable: ${custodio}`, 14, 190);
+            doc.text(`Personal D.G.R.S: ${personal}`, 14, 210);
 
-            // Guardar en Google Drive
+            // Guardar PDF en Google Drive
             const pdfData = doc.output('blob');
             const formData = new FormData();
             formData.append('file', pdfData, 'Registro_Completo.pdf');
@@ -99,6 +116,9 @@
             } else {
                 alert('Error al guardar el PDF en Google Drive');
             }
+
+            // Descargar PDF completo
+            doc.save('Registro_Completo.pdf');
         }
     </script>
 </body>

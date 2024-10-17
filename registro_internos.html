@@ -28,14 +28,38 @@
         <button class="btn" id="signout_button" style="display: none;">Cerrar sesión</button>
         
         <form id="registroForm">
-            <!-- Aquí va tu formulario -->
-        </form>
+            <label for="fecha">Fecha:</label>
+            <input type="date" id="fecha" name="fecha" required>
 
-        <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+            <label for="hora">Hora:</label>
+            <input type="time" id="hora" name="hora" required>
+
+            <label for="motivo">Motivo:</label>
+            <input type="text" id="motivo" name="motivo" required>
+
+            <label for="excarceladosH">Excarcelados Hombres:</label>
+            <input type="number" id="excarceladosH" name="excarceladosH" required>
+
+            <label for="excarceladosM">Excarcelados Mujeres:</label>
+            <input type="number" id="excarceladosM" name="excarceladosM" required>
+
+            <label for="presentesH">Presentes Hombres:</label>
+            <input type="number" id="presentesH" name="presentesH" required>
+
+            <label for="presentesM">Presentes Mujeres:</label>
+            <input type="number" id="presentesM" name="presentesM" required>
+
+            <label for="custodio">Custodio Responsable:</label>
+            <input type="text" id="custodio" name="custodio" required>
+
+            <label for="personal">Personal de la D.G.R.S.:</label>
+            <input type="text" id="personal" name="personal" required>
+
+            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+        </form>
     </div>
 
     <script>
-        // Cargar las credenciales de OAuth
         const CLIENT_ID = '982226404755-8cpgjvkba74miq0aljgt9i9pp7278p3m.apps.googleusercontent.com';
         const API_KEY = 'AIzaSyD1d3Un7HltXCFk_WssjyYmZabH0JRxACM';
         const DISCOVERY_DOCS = ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
@@ -45,12 +69,10 @@
         let gapiInited = false;
         let gisInited = false;
 
-        // Cargar la biblioteca de Google API
         function gapiLoaded() {
             gapi.load('client', initializeGapiClient);
         }
 
-        // Inicializar el cliente GAPI
         async function initializeGapiClient() {
             await gapi.client.init({
                 apiKey: API_KEY,
@@ -60,25 +82,22 @@
             maybeEnableButtons();
         }
 
-        // Cargar la API del servicio de identidad de Google (GIS)
         function gisLoaded() {
             tokenClient = google.accounts.oauth2.initTokenClient({
                 client_id: CLIENT_ID,
                 scope: SCOPES,
-                callback: '', // Autorización de OAuth 2.0 completada
+                callback: '',
             });
             gisInited = true;
             maybeEnableButtons();
         }
 
-        // Habilitar los botones de inicio de sesión/cierre de sesión si el cliente GAPI y GIS están inicializados
         function maybeEnableButtons() {
             if (gapiInited && gisInited) {
                 document.getElementById('authorize_button').style.display = 'block';
             }
         }
 
-        // Manejar el botón de autorización de Google
         function handleAuthClick() {
             tokenClient.callback = async (resp) => {
                 if (resp.error !== undefined) {
@@ -94,7 +113,6 @@
             }
         }
 
-        // Manejar el cierre de sesión de Google
         function handleSignoutClick() {
             const token = gapi.client.getToken();
             if (token !== null) {
@@ -104,26 +122,32 @@
             }
         }
 
-        // Generar el PDF y subirlo a Google Drive
         async function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('landscape');
 
-            // Generar tu contenido del PDF
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+            const motivo = document.getElementById('motivo').value;
+            const excarceladosH = document.getElementById('excarceladosH').value;
+            const excarceladosM = document.getElementById('excarceladosM').value;
+            const presentesH = document.getElementById('presentesH').value;
+            const presentesM = document.getElementById('presentesM').value;
+            const custodio = document.getElementById('custodio').value;
+            const personal = document.getElementById('personal').value;
+
             doc.text("Registro del Día", 140, 20, { align: 'center' });
             doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Custodio Responsable', 'Personal de la D.G.R.S.']],
                 body: [
-                    // Aquí puedes agregar los datos del registro
+                    [fecha, hora, motivo, excarceladosH, excarceladosM, presentesH, presentesM, custodio, personal]
                 ],
                 startY: 40,
                 margin: { top: 40 },
             });
 
-            // Guardar el PDF en una variable blob
             const pdfBlob = doc.output('blob');
 
-            // Crear un archivo en Google Drive
             const metadata = {
                 name: 'registro_del_dia.pdf',
                 mimeType: 'application/pdf',
@@ -136,7 +160,6 @@
             const accessToken = gapi.auth.getToken().access_token;
             const uploadUrl = 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
 
-            // Subir el PDF a Google Drive
             const response = await fetch(uploadUrl, {
                 method: 'POST',
                 headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
@@ -147,12 +170,10 @@
             alert(`PDF subido a Google Drive con ID: ${file.id}`);
         }
 
-        // Cargar las funciones necesarias para Google API
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('authorize_button').addEventListener('click', handleAuthClick);
             document.getElementById('signout_button').addEventListener('click', handleSignoutClick);
 
-            // Cargar scripts de Google API y GIS
             gapiLoaded();
             gisLoaded();
         });

@@ -161,53 +161,36 @@
                 return;
             }
 
-            const recordList = document.getElementById('recordList');
-            recordList.innerHTML = '';
-
-            fechasSeleccionadas.forEach(fecha => {
-                const registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-                const registros = registrosPorFecha[fecha] || [];
-
-                registros.forEach((registro, index) => {
-                    const registroText = document.createElement('div');
-                    registroText.innerText = `${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivo}`;
-                    recordList.appendChild(registroText);
-                });
-            });
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            let registros = fechasSeleccionadas.flatMap(fecha => registrosPorFecha[fecha] || []);
+            generarPDFCompleto(registros);
         }
 
         function exportarPDF() {
-            const doc = new jsPDF();
-            doc.text("Registro Completo", 14, 22);
-            const records = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            const doc = new jsPDF('landscape');
             const fecha = document.getElementById('fecha').value;
-            const registros = records[fecha] || [];
+            const hora = document.getElementById('hora').value;
 
-            const tableData = registros.map((registro, index) => [
-                registro.fecha,
-                registro.hora,
-                registro.motivo,
-                registro.excarceladosH,
-                registro.excarceladosM,
-                registro.presentesH,
-                registro.presentesM,
-                registro.total
-            ]);
+            doc.text('Registro Completo', 14, 20);
+            doc.text(`Fecha: ${fecha}`, 14, 30);
+            doc.text(`Hora: ${hora}`, 14, 40);
+
+            const registro = {
+                fecha,
+                hora,
+                motivo: document.getElementById('motivo').value,
+                excarceladosH: document.getElementById('excarceladosH').value,
+                excarceladosM: document.getElementById('excarceladosM').value,
+                presentesH: document.getElementById('presentesH').value,
+                presentesM: document.getElementById('presentesM').value,
+                total: document.getElementById('total').value,
+                custodioResponsable: document.getElementById('custodioResponsable').value,
+                personalDGRS: document.getElementById('personalDGRS').value
+            };
 
             doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total']],
-                body: tableData,
-            });
-            doc.save(`Registro_Internos_${fecha}.pdf`);
-        }
-
-        function exportarPDFCompleto() {
-            const doc = new jsPDF();
-            doc.text("Registro Completo", 14, 22);
-            const records = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-
-            const tableData = Object.entries(records).flatMap(([fecha, registros]) =>
-                registros.map(registro => [
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.']],
+                body: [[
                     registro.fecha,
                     registro.hora,
                     registro.motivo,
@@ -215,37 +198,77 @@
                     registro.excarceladosM,
                     registro.presentesH,
                     registro.presentesM,
-                    registro.total
-                ])
-            );
-
-            doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total']],
-                body: tableData,
+                    registro.total,
+                    registro.custodioResponsable,
+                    registro.personalDGRS
+                ]],
+                startY: 50,
+                margin: { top: 40 },
+                styles: { cellPadding: 2, fontSize: 8, valign: 'middle', halign: 'center' }
             });
-            doc.save(`Registro_Completo.pdf`);
+
+            doc.save('registro_dia.pdf');
+        }
+
+        function exportarPDFCompleto() {
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            let registros = [];
+
+            // Obtenemos todos los registros
+            for (const fecha in registrosPorFecha) {
+                registros = registros.concat(registrosPorFecha[fecha]);
+            }
+
+            generarPDFCompleto(registros);
+        }
+
+        function generarPDFCompleto(registros) {
+            const doc = new jsPDF('landscape');
+
+            doc.text('Registro Completo', 14, 20);
+            doc.autoTable({
+                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.']],
+                body: registros.map(reg => [
+                    reg.fecha,
+                    reg.hora,
+                    reg.motivo,
+                    reg.excarceladosH,
+                    reg.excarceladosM,
+                    reg.presentesH,
+                    reg.presentesM,
+                    reg.total,
+                    reg.custodioResponsable,
+                    reg.personalDGRS
+                ]),
+                startY: 50,
+                margin: { top: 40 },
+                styles: { cellPadding: 2, fontSize: 8, valign: 'middle', halign: 'center' }
+            });
+
+            doc.save('registro_completo.pdf');
         }
 
         function cerrarSesion() {
             localStorage.removeItem('loggedIn');
-            window.location.href = 'index.html'; // Redirige al inicio de sesión
+            window.location.href = 'index.html';
         }
 
         function actualizarFechasDisponibles() {
-            const registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
             const fechaSeleccion = document.getElementById('fechaSeleccion');
+            const fechasSeleccionadas = Object.keys(JSON.parse(localStorage.getItem('registrosPorFecha')) || {});
             fechaSeleccion.innerHTML = '';
 
-            Object.keys(registrosPorFecha).forEach(fecha => {
+            fechasSeleccionadas.forEach(fecha => {
                 const option = document.createElement('option');
                 option.value = fecha;
-                option.text = fecha;
+                option.textContent = fecha;
                 fechaSeleccion.appendChild(option);
             });
         }
 
-        // Cargar fechas al inicio
-        document.addEventListener('DOMContentLoaded', actualizarFechasDisponibles);
+        window.onload = function() {
+            actualizarFechasDisponibles();
+        };
     </script>
 </body>
 </html>

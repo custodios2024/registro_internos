@@ -4,271 +4,102 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Internos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
-        h2 { text-align: center; margin-top: 60px; }
-        h3 { text-align: center; margin-top: 20px; }
-        label { font-weight: bold; }
-        input, button, select { width: 100%; margin-bottom: 10px; padding: 10px; }
-        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; }
-        .btn:hover { background-color: #0056b3; }
-        .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
-        .record-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
-        .select-container { margin-bottom: 20px; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
-    <script>
-        // Verificar si el usuario está autenticado
-        const loggedIn = localStorage.getItem('loggedIn');
-
-        if (!loggedIn) {
-            // Redirige a la página de inicio de sesión si no está autenticado
-            window.location.href = 'index.html';
-        }
-    </script>
     <div class="container">
-        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px; height: auto;">
-        <h3 id="centroInternamientoHeader" style="text-align: center; margin-top: 60px;">Centro de Internamiento:</h3>
-        <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES" required>
-
-        <h2 style="margin-top: 20px;">Registro de Internos</h2>
+        <img src="logo_sspc2.png" alt="Logo" class="logo">
+        <h2>Registro de Internos</h2>
         <form id="registroForm">
+            <!-- Campos del formulario -->
             <label for="fecha">Fecha:</label>
-            <input type="date" id="fecha" name="fecha" required>
-
+            <input type="date" id="fecha" required>
+            
             <label for="hora">Hora:</label>
-            <input type="time" id="hora" name="hora" required>
+            <input type="time" id="hora" required>
 
             <label for="motivo">Motivo:</label>
-            <input type="text" id="motivo" name="motivo" required>
+            <input type="text" id="motivo" required>
 
-            <label for="excarceladosH">Excarcelados (Hombres):</label>
-            <input type="number" id="excarceladosH" name="excarceladosH" required oninput="sumarTotal()">
+            <label for="excarcelados">Excarcelados:</label>
+            <input type="number" id="excarcelados" required>
 
-            <label for="excarceladosM">Excarcelados (Mujeres):</label>
-            <input type="number" id="excarceladosM" name="excarceladosM" required oninput="sumarTotal()">
-
-            <label for="presentesH">Presentes (Hombres):</label>
-            <input type="number" id="presentesH" name="presentesH" required oninput="sumarTotal()">
-
-            <label for="presentesM">Presentes (Mujeres):</label>
-            <input type="number" id="presentesM" name="presentesM" required oninput="sumarTotal()">
+            <label for="presentes">Presentes:</label>
+            <input type="number" id="presentes" required>
 
             <label for="total">Total:</label>
-            <input type="number" id="total" name="total" required readonly>
+            <input type="number" id="total" required>
 
-            <label for="custodioResponsable">Custodio Responsable:</label>
-            <input type="text" id="custodioResponsable" name="custodioResponsable" required>
+            <label for="custodio">Custodio Responsable:</label>
+            <input type="text" id="custodio" required>
 
-            <label for="personalDGRS">Personal de la D.G.R.S.:</label>
-            <input type="text" id="personalDGRS" name="personalDGRS" required>
+            <label for="personal">Personal D.G.R.S:</label>
+            <input type="text" id="personal" required>
 
-            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
-            <div class="select-container">
-                <label for="fechasSeleccion">Selecciona Fechas para Exportar al PDF Completo:</label>
-                <select id="fechasSeleccion" multiple onchange="mostrarRegistrosPorFechas()">
-                    <!-- Fechas se agregarán dinámicamente aquí -->
-                </select>
-            </div>
-            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
-            <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
+            <label for="centro">Centro de Internamiento:</label>
+            <input type="text" id="centro" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES" required>
+            
+            <button type="button" class="btn" onclick="guardarPDFDia()">Guardar PDF del Día</button>
+            <button type="button" class="btn" onclick="guardarPDFCompleto()">Guardar Completo</button>
         </form>
-        <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()">
-            <!-- Fechas se agregarán dinámicamente aquí -->
-        </select>
-        <div class="record-list" id="recordList"></div>
-        <pre id="output" class="output"></pre>
     </div>
 
     <script>
-        let registroGuardado = false;
-
-        function sumarTotal() {
-            const excarceladosH = parseInt(document.getElementById('excarceladosH').value) || 0;
-            const excarceladosM = parseInt(document.getElementById('excarceladosM').value) || 0;
-            const presentesH = parseInt(document.getElementById('presentesH').value) || 0;
-            const presentesM = parseInt(document.getElementById('presentesM').value) || 0;
-
-            document.getElementById('total').value = excarceladosH + excarceladosM + presentesH + presentesM;
-        }
-
-        function guardarRegistro() {
-            const form = document.getElementById('registroForm');
-            const formData = new FormData(form);
-
-            let registro = {};
-            formData.forEach((value, key) => {
-                if (key !== 'centroInternamiento') { // Excluyendo centroInternamiento
-                    registro[key] = value.toUpperCase();
-                }
-            });
-
-            const fecha = registro.fecha; // Extraemos la fecha del registro
-            const hora = registro.hora; // Extraemos la hora del registro
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fecha] || [];
-
-            // Verifica si ya se guardó un registro con la misma hora
-            if (registros.some(reg => reg.hora === hora)) {
-                alert('Ya se ha guardado un registro con esta hora. No se puede guardar el mismo registro nuevamente.');
-                return;
-            }
-
-            if (registros.length < 10) {
-                if (!registroGuardado) {
-                    registros.push(registro);
-                    registrosPorFecha[fecha] = registros;
-                    localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-                    registroGuardado = true;
-                    alert('Registro guardado con éxito.');
-                    actualizarFechasDisponibles();
-                    mostrarRegistrosPorFecha();
-                } else {
-                    alert('Ya se ha guardado un registro para este día. No se pueden guardar más registros.');
-                }
-            } else {
-                alert('Se han alcanzado los 10 registros para esta fecha.');
-            }
-        }
-
-        function mostrarRegistrosPorFecha() {
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fechaSeleccionada] || [];
-            const recordList = document.getElementById('recordList');
-            recordList.innerHTML = '';
-
-            registros.forEach((registro, index) => {
-                const registroText = document.createElement('div');
-                registroText.innerText = `${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivo}`;
-                recordList.appendChild(registroText);
-            });
-        }
-
-        function mostrarRegistrosPorFechas() {
-            const fechasSeleccionadas = Array.from(document.getElementById('fechasSeleccion').options)
-                .filter(option => option.selected)
-                .map(option => option.value);
-
-            if (fechasSeleccionadas.length === 0) {
-                alert('Por favor, selecciona al menos una fecha.');
-                return;
-            }
-
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = fechasSeleccionadas.flatMap(fecha => registrosPorFecha[fecha] || []);
-            generarPDFCompleto(registros);
-        }
-
-        function exportarPDF() {
-            const doc = new jsPDF('landscape');
+        async function guardarPDFDia() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'pt', 'a4');
             const fecha = document.getElementById('fecha').value;
             const hora = document.getElementById('hora').value;
+            const motivo = document.getElementById('motivo').value;
+            const excarcelados = document.getElementById('excarcelados').value;
+            const presentes = document.getElementById('presentes').value;
+            const total = document.getElementById('total').value;
+            const custodio = document.getElementById('custodio').value;
+            const personal = document.getElementById('personal').value;
+            const centro = document.getElementById('centro').value;
 
-            doc.text('Registro Completo', 14, 20);
-            doc.text(`Fecha: ${fecha}`, 14, 30);
-            doc.text(`Hora: ${hora}`, 14, 40);
+            // Agregar contenido al PDF
+            doc.text(`Centro de Internamiento: ${centro}`, 14, 30);
+            doc.text('Registro de Internos', 14, 50);
+            doc.text(`Fecha: ${fecha}`, 14, 70);
+            doc.text(`Hora: ${hora}`, 14, 90);
+            doc.text(`Motivo: ${motivo}`, 14, 110);
+            doc.text(`Excarcelados: ${excarcelados}`, 14, 130);
+            doc.text(`Presentes: ${presentes}`, 14, 150);
+            doc.text(`Total: ${total}`, 14, 170);
+            doc.text(`Custodio Responsable: ${custodio}`, 14, 190);
+            doc.text(`Personal D.G.R.S: ${personal}`, 14, 210);
 
-            const registro = {
-                fecha,
-                hora,
-                motivo: document.getElementById('motivo').value,
-                excarceladosH: document.getElementById('excarceladosH').value,
-                excarceladosM: document.getElementById('excarceladosM').value,
-                presentesH: document.getElementById('presentesH').value,
-                presentesM: document.getElementById('presentesM').value,
-                total: document.getElementById('total').value,
-                custodioResponsable: document.getElementById('custodioResponsable').value,
-                personalDGRS: document.getElementById('personalDGRS').value
-            };
-
-            doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.']],
-                body: [[
-                    registro.fecha,
-                    registro.hora,
-                    registro.motivo,
-                    registro.excarceladosH,
-                    registro.excarceladosM,
-                    registro.presentesH,
-                    registro.presentesM,
-                    registro.total,
-                    registro.custodioResponsable,
-                    registro.personalDGRS
-                ]],
-                startY: 50,
-                margin: { top: 40 },
-                styles: { cellPadding: 2, fontSize: 8, valign: 'middle', halign: 'center' }
-            });
-
-            doc.save('registro_dia.pdf');
+            // Descargar PDF
+            doc.save(`Registro_Dia_${fecha}.pdf`);
         }
 
-        function exportarPDFCompleto() {
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = [];
+        async function guardarPDFCompleto() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'pt', 'a4');
 
-            // Obtenemos todos los registros
-            for (const fecha in registrosPorFecha) {
-                registros = registros.concat(registrosPorFecha[fecha]);
+            // Agregar contenido al PDF completo
+            doc.text('Registro Completo', 14, 30);
+            // Aquí agregar el resto de los datos que quieres incluir en el PDF completo
+
+            // Guardar en Google Drive
+            const pdfData = doc.output('blob');
+            const formData = new FormData();
+            formData.append('file', pdfData, 'Registro_Completo.pdf');
+
+            // Envía el PDF a Google Drive (implementa tu lógica de carga aquí)
+            const response = await fetch('/upload-to-google-drive', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                alert('PDF completo guardado en Google Drive');
+            } else {
+                alert('Error al guardar el PDF en Google Drive');
             }
-
-            generarPDFCompleto(registros);
         }
-
-        function generarPDFCompleto(registros) {
-            const doc = new jsPDF('landscape');
-
-            doc.text('Registro Completo', 14, 20);
-            doc.autoTable({
-                head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.']],
-                body: registros.map(reg => [
-                    reg.fecha,
-                    reg.hora,
-                    reg.motivo,
-                    reg.excarceladosH,
-                    reg.excarceladosM,
-                    reg.presentesH,
-                    reg.presentesM,
-                    reg.total,
-                    reg.custodioResponsable,
-                    reg.personalDGRS
-                ]),
-                startY: 50,
-                margin: { top: 40 },
-                styles: { cellPadding: 2, fontSize: 8, valign: 'middle', halign: 'center' }
-            });
-
-            doc.save('registro_completo.pdf');
-        }
-
-        function cerrarSesion() {
-            localStorage.removeItem('loggedIn');
-            window.location.href = 'index.html';
-        }
-
-        function actualizarFechasDisponibles() {
-            const fechaSeleccion = document.getElementById('fechaSeleccion');
-            const fechasSeleccionadas = Object.keys(JSON.parse(localStorage.getItem('registrosPorFecha')) || {});
-            fechaSeleccion.innerHTML = '';
-
-            fechasSeleccionadas.forEach(fecha => {
-                const option = document.createElement('option');
-                option.value = fecha;
-                option.textContent = fecha;
-                fechaSeleccion.appendChild(option);
-            });
-        }
-
-        window.onload = function() {
-            actualizarFechasDisponibles();
-        };
     </script>
 </body>
 </html>

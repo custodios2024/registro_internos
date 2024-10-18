@@ -6,6 +6,7 @@
     <title>Registro de Internos</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
@@ -29,153 +30,67 @@
             // Redirige a la página de inicio de sesión si no está autenticado
             window.location.href = 'index.html';
         }
-    </script>
-    <div class="container">
-        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px; height: auto;">
-        <h3 id="centroInternamientoHeader" style="text-align: center; margin-top: 60px;">Centro de Internamiento:</h3>
-        <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES" required>
 
-        <h2 style="margin-top: 20px;">Registro de Internos</h2>
-        <form id="registroForm">
-            <label for="fecha">Fecha:</label>
-            <input type="date" id="fecha" name="fecha" required>
+        // Variables de Google API
+        let gapiIniciado = false;
+        let googleAutorizado = false;
 
-            <label for="hora">Hora:</label>
-            <input type="time" id="hora" name="hora" required>
-
-            <label for="motivo">Motivo:</label>
-            <input type="text" id="motivo" name="motivo" required>
-
-            <label for="excarceladosH">Excarcelados (Hombres):</label>
-            <input type="number" id="excarceladosH" name="excarceladosH" required oninput="sumarTotal()">
-
-            <label for="excarceladosM">Excarcelados (Mujeres):</label>
-            <input type="number" id="excarceladosM" name="excarceladosM" required oninput="sumarTotal()">
-
-            <label for="presentesH">Presentes (Hombres):</label>
-            <input type="number" id="presentesH" name="presentesH" required oninput="sumarTotal()">
-
-            <label for="presentesM">Presentes (Mujeres):</label>
-            <input type="number" id="presentesM" name="presentesM" required oninput="sumarTotal()">
-
-            <label for="total">Total:</label>
-            <input type="number" id="total" name="total" required readonly>
-
-            <label for="custodioResponsable">Custodio Responsable:</label>
-            <input type="text" id="custodioResponsable" name="custodioResponsable" required>
-
-            <label for="personalDGRS">Personal de la D.G.R.S.:</label>
-            <input type="text" id="personalDGRS" name="personalDGRS" required>
-
-            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
-            <div class="select-container">
-                <label for="fechasSeleccion">Selecciona Fechas para Exportar al PDF Completo:</label>
-                <select id="fechasSeleccion" multiple onchange="mostrarRegistrosPorFechas()">
-                    <!-- Fechas se agregarán dinámicamente aquí -->
-                </select>
-            </div>
-            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
-            <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
-        </form>
-        <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()">
-            <!-- Fechas se agregarán dinámicamente aquí -->
-        </select>
-        <div class="record-list" id="recordList"></div>
-        <pre id="output" class="output"></pre>
-    </div>
-
-    <script>
-        let registroGuardado = false;
-
-        function sumarTotal() {
-            const excarceladosH = parseInt(document.getElementById('excarceladosH').value) || 0;
-            const excarceladosM = parseInt(document.getElementById('excarceladosM').value) || 0;
-            const presentesH = parseInt(document.getElementById('presentesH').value) || 0;
-            const presentesM = parseInt(document.getElementById('presentesM').value) || 0;
-
-            document.getElementById('total').value = excarceladosH + excarceladosM + presentesH + presentesM;
+        // Cargar la API de Google
+        function cargarApiGoogle() {
+            gapi.load('client:auth2', iniciarClienteGoogle);
         }
 
-        function guardarRegistro() {
-            const form = document.getElementById('registroForm');
-            const formData = new FormData(form);
-
-            let registro = {};
-            formData.forEach((value, key) => {
-                if (key !== 'centroInternamiento') { // Excluyendo centroInternamiento
-                    registro[key] = value.toUpperCase();
-                }
-            });
-
-            const fecha = registro.fecha; // Extraemos la fecha del registro
-            const hora = registro.hora; // Extraemos la hora del registro
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fecha] || [];
-
-            // Verifica si ya se guardó un registro con la misma hora
-            if (registros.some(reg => reg.hora === hora)) {
-                alert('Ya se ha guardado un registro con esta hora. No se puede guardar el mismo registro nuevamente.');
-                return;
-            }
-
-            if (registros.length < 10) {
-                if (!registroGuardado) {
-                    registros.push(registro);
-                    registrosPorFecha[fecha] = registros;
-                    localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-                    registroGuardado = true;
-                    alert('Registro guardado con éxito.');
-                    actualizarFechasDisponibles();
-                    mostrarRegistrosPorFecha();
-                } else {
-                    alert('Ya se ha guardado un registro para este día. No se pueden guardar más registros.');
-                }
-            } else {
-                alert('Se han alcanzado los 10 registros para esta fecha.');
-            }
-        }
-
-        function mostrarRegistrosPorFecha() {
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fechaSeleccionada] || [];
-            const recordList = document.getElementById('recordList');
-            recordList.innerHTML = '';
-
-            registros.forEach((registro, index) => {
-                const registroText = document.createElement('div');
-                registroText.innerText = `${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivo}`;
-                recordList.appendChild(registroText);
+        // Inicializar cliente Google API
+        function iniciarClienteGoogle() {
+            gapi.client.init({
+                apiKey: 'YOUR_API_KEY', // Inserta tu API Key
+                clientId: '982226404755-8cpgjvkba74miq0aljgt9i9pp7278p3m.apps.googleusercontent.com',
+                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"],
+                scope: 'https://www.googleapis.com/auth/drive.file'
+            }).then(() => {
+                gapiIniciado = true;
+                verificarInicioSesion();
+            }, (error) => {
+                console.error("Error al iniciar cliente Google API:", error);
             });
         }
 
-        function mostrarRegistrosPorFechas() {
-            const fechasSeleccionadas = Array.from(document.getElementById('fechasSeleccion').options)
-                .filter(option => option.selected)
-                .map(option => option.value);
-
-            if (fechasSeleccionadas.length === 0) {
-                alert('Por favor, selecciona al menos una fecha.');
-                return;
+        // Verificar si el usuario está autorizado
+        function verificarInicioSesion() {
+            const GoogleAuth = gapi.auth2.getAuthInstance();
+            googleAutorizado = GoogleAuth.isSignedIn.get();
+            if (!googleAutorizado) {
+                GoogleAuth.signIn();
             }
+        }
 
-            const recordList = document.getElementById('recordList');
-            recordList.innerHTML = '';
+        // Función para subir el PDF a Google Drive
+        function subirPDFaDrive(pdfBlob, nombreArchivo) {
+            const fileMetadata = {
+                'name': nombreArchivo,
+                'mimeType': 'application/pdf'
+            };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(fileMetadata)], { type: 'application/json' }));
+            form.append('file', pdfBlob);
 
-            fechasSeleccionadas.forEach(fecha => {
-                const registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-                const registros = registrosPorFecha[fecha] || [];
-
-                registros.forEach((registro, index) => {
-                    const registroText = document.createElement('div');
-                    registroText.innerText = `${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivo}`;
-                    recordList.appendChild(registroText);
-                });
+            gapi.client.request({
+                path: 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${gapi.auth2.getAuthInstance().currentUser.get().getAuthResponse().access_token}`,
+                },
+                body: form
+            }).then((response) => {
+                console.log('Archivo subido con éxito:', response);
+                alert('El archivo se ha subido correctamente a Google Drive.');
+            }, (error) => {
+                console.error("Error al subir el archivo a Drive:", error);
+                alert('Hubo un error al subir el archivo a Google Drive.');
             });
         }
 
+        // Función para descargar el PDF del día
         function exportarPDF() {
             const doc = new jsPDF();
             doc.text("Registro Completo", 14, 22);
@@ -183,7 +98,7 @@
             const fecha = document.getElementById('fecha').value;
             const registros = records[fecha] || [];
 
-            const tableData = registros.map((registro, index) => [
+            const tableData = registros.map((registro) => [
                 registro.fecha,
                 registro.hora,
                 registro.motivo,
@@ -201,6 +116,7 @@
             doc.save(`Registro_Internos_${fecha}.pdf`);
         }
 
+        // Función para guardar el PDF completo en Google Drive
         function exportarPDFCompleto() {
             const doc = new jsPDF();
             doc.text("Registro Completo", 14, 22);
@@ -223,29 +139,15 @@
                 head: [['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total']],
                 body: tableData,
             });
-            doc.save(`Registro_Completo.pdf`);
+
+            const pdfBlob = doc.output('blob');
+            subirPDFaDrive(pdfBlob, 'Registro_Completo.pdf');
         }
 
-        function cerrarSesion() {
-            localStorage.removeItem('loggedIn');
-            window.location.href = 'index.html'; // Redirige al inicio de sesión
-        }
-
-        function actualizarFechasDisponibles() {
-            const registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            const fechaSeleccion = document.getElementById('fechaSeleccion');
-            fechaSeleccion.innerHTML = '';
-
-            Object.keys(registrosPorFecha).forEach(fecha => {
-                const option = document.createElement('option');
-                option.value = fecha;
-                option.text = fecha;
-                fechaSeleccion.appendChild(option);
-            });
-        }
-
-        // Cargar fechas al inicio
-        document.addEventListener('DOMContentLoaded', actualizarFechasDisponibles);
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarApiGoogle(); // Cargar la API de Google Drive al cargar la página
+        });
     </script>
 </body>
 </html>
+

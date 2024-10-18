@@ -9,8 +9,8 @@
     <script src="https://apis.google.com/js/api.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
-        h2 { text-align: center; margin-top: 60px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        h2 { text-align: center; margin-top: 20px; }
         h3 { text-align: center; margin-top: 20px; }
         label { font-weight: bold; }
         input, button, select { width: 100%; margin-bottom: 10px; padding: 10px; }
@@ -22,15 +22,16 @@
     </style>
 </head>
 <body>
+    <div class="container">
+        <h2>Registro de Internos</h2>
+        <label for="fecha">Selecciona la fecha del registro:</label>
+        <input type="date" id="fecha">
+
+        <button class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+        <button class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
+    </div>
+
     <script>
-        // Verificar si el usuario está autenticado
-        const loggedIn = localStorage.getItem('loggedIn');
-
-        if (!loggedIn) {
-            // Redirige a la página de inicio de sesión si no está autenticado
-            window.location.href = 'index.html';
-        }
-
         // Variables de Google API
         let gapiIniciado = false;
         let googleAutorizado = false;
@@ -150,4 +151,3 @@
     </script>
 </body>
 </html>
-

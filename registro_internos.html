@@ -3,71 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Internos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <title>Registro de Internos</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        h2, h3 {
-            text-align: center;
-            color: #007bff;
-            margin-top: 20px;
-        }
-
-        label {
-            font-weight: bold;
-            margin-top: 10px;
-            display: block;
-        }
-
-        input, select, button {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .btn:hover {
-            background-color: #0056b3;
-        }
-
-        .record-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ccc;
-            padding: 10px;
-            margin-top: 20px;
-        }
-
-        .logo {
-            display: block;
-            margin: 10px auto;
-            width: 100px;
-            height: auto;
-        }
+        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
+        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        h2 { text-align: center; margin-top: 60px; }
+        h3 { text-align: center; margin-top: 20px; }
+        label { font-weight: bold; }
+        input, button, select { width: 100%; margin-bottom: 10px; padding: 10px; }
+        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        .btn:hover { background-color: #0056b3; }
+        .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
+        .record-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
     </style>
 </head>
 <body>
@@ -81,87 +28,212 @@
         }
     </script>
     <div class="container">
-        <img src="logo_sspc2.png" alt="Logo SSPC" class="logo">
         <h3 id="centroInternamientoHeader">Centro de Internamiento:</h3>
-        <input type="text" id="centroInternamiento" name="centroInternamiento" 
-               value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES" required>
+        <!-- Campo de texto con valor por defecto editable -->
+        <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" required>
 
-        <h2>Registro Internos</h2>
-        
+        <h2>Registro de Internos</h2>
         <form id="registroForm">
-            <label for="fecha">Fecha</label>
+            <label for="fecha">Fecha:</label>
             <input type="date" id="fecha" name="fecha" required>
 
-            <label for="hora">Hora</label>
+            <label for="hora">Hora:</label>
             <input type="time" id="hora" name="hora" required>
 
-            <label for="motivo">Motivo</label>
-            <input type="text" id="motivo" name="motivo" required>
+            <label for="motivoOrdinario">Motivo Ordinario:</label>
+            <input type="text" id="motivoOrdinario" name="motivoOrdinario" required>
 
-            <label for="excarcelados">Excarcelados</label>
-            <input type="number" id="excarcelados" name="excarcelados" min="0" required>
+            <label for="motivoExtraordinario">Motivo Extraordinario:</label>
+            <input type="text" id="motivoExtraordinario" name="motivoExtraordinario" required>
 
-            <label for="presentes">Presentes</label>
-            <input type="number" id="presentes" name="presentes" min="0" required>
+            <label for="excarcelados">Excarcelados:</label>
+            <input type="number" id="excarcelados" name="excarcelados" required>
 
-            <label for="total">Total</label>
-            <input type="number" id="total" name="total" min="0" readonly>
+            <label for="presentes">Presentes:</label>
+            <input type="number" id="presentes" name="presentes" required oninput="sumarTotal()">
 
-            <label for="custodio">Custodio Responsable</label>
-            <input type="text" id="custodio" name="custodio" required>
+            <label for="total">Total:</label>
+            <input type="number" id="total" name="total" required readonly>
 
-            <label for="personal">Personal D.G.R.S.</label>
-            <input type="text" id="personal" name="personal" required>
+            <label for="custodioResponsable">Custodio Responsable:</label>
+            <input type="text" id="custodioResponsable" name="custodioResponsable" required>
 
-            <button type="button" id="guardarBtn" class="btn">Guardar</button>
+            <label for="personalDGRS">Personal de la D.G.R.S.:</label>
+            <input type="text" id="personalDGRS" name="personalDGRS" required>
+
+            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
+            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
+            <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
         </form>
-
-        <div class="record-list" id="registroPreview"></div>
-
-        <button id="descargarPDFBtn" class="btn">Descargar PDF</button>
+        <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
+        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()">
+            <!-- Fechas se agregarán dinámicamente aquí -->
+        </select>
+        <div class="record-list" id="recordList"></div>
+        <pre id="output" class="output"></pre>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
     <script>
-        document.getElementById('guardarBtn').addEventListener('click', () => {
-            const fecha = document.getElementById('fecha').value;
-            const hora = document.getElementById('hora').value;
-            const motivo = document.getElementById('motivo').value;
+        function sumarTotal() {
             const excarcelados = parseInt(document.getElementById('excarcelados').value) || 0;
             const presentes = parseInt(document.getElementById('presentes').value) || 0;
-            const total = excarcelados + presentes;
-            const custodio = document.getElementById('custodio').value;
-            const personal = document.getElementById('personal').value;
+            document.getElementById('total').value = excarcelados + presentes;
+        }
 
-            if (!fecha || !hora || !motivo || !custodio || !personal) {
-                alert('Por favor, complete todos los campos.');
+        function guardarRegistro() {
+            const form = document.getElementById('registroForm');
+            const formData = new FormData(form);
+
+            let registro = {};
+            formData.forEach((value, key) => {
+                if (key !== 'centroInternamiento') { // Excluyendo centroInternamiento
+                    registro[key] = value.toUpperCase();
+                }
+            });
+
+            const fecha = registro.fecha; // Extraemos la fecha del registro
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            let registros = registrosPorFecha[fecha] || [];
+
+            if (registros.length < 10) {
+                registros.push(registro);
+                registrosPorFecha[fecha] = registros;
+                localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
+                actualizarFechasDisponibles();
+                mostrarRegistrosPorFecha();
+            } else {
+                alert('Se han alcanzado los 10 registros para esta fecha.');
+            }
+        }
+
+        function mostrarRegistrosPorFecha() {
+            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            let registros = registrosPorFecha[fechaSeleccionada] || [];
+            const recordList = document.getElementById('recordList');
+            recordList.innerHTML = '';
+
+            registros.forEach((registro, index) => {
+                const registroText = document.createElement('div');
+                registroText.innerText = ${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivoOrdinario};
+                recordList.appendChild(registroText);
+            });
+        }
+
+        function actualizarFechasDisponibles() {
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            const fechaSeleccion = document.getElementById('fechaSeleccion');
+            fechaSeleccion.innerHTML = '';
+
+            Object.keys(registrosPorFecha).forEach(fecha => {
+                const option = document.createElement('option');
+                option.value = fecha;
+                option.text = fecha;
+                fechaSeleccion.appendChild(option);
+            });
+
+            if (fechaSeleccion.options.length > 0) {
+                fechaSeleccion.value = fechaSeleccion.options[fechaSeleccion.options.length - 1].value;
+                mostrarRegistrosPorFecha();
+            }
+        }
+
+        function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
+            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            let registros = registrosPorFecha[fechaSeleccionada] || [];
+
+            if (registros.length === 0) {
+                alert('No hay registros para exportar.');
                 return;
             }
 
-            document.getElementById('total').value = total;
+            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
 
-            const registroPreview = document.getElementById('registroPreview');
-            const nuevoRegistro = `
-                <div>
-                    <strong>Fecha:</strong> ${fecha} <br>
-                    <strong>Hora:</strong> ${hora} <br>
-                    <strong>Motivo:</strong> ${motivo} <br>
-                    <strong>Excarcelados:</strong> ${excarcelados} <br>
-                    <strong>Presentes:</strong> ${presentes} <br>
-                    <strong>Total:</strong> ${total} <br>
-                    <strong>Custodio:</strong> ${custodio} <br>
-                    <strong>Personal:</strong> ${personal}
-                </div>
-                <hr>
-            `;
-            registroPreview.innerHTML += nuevoRegistro;
-        });
+            doc.setFontSize(18);
+            doc.text(Centro de Internamiento: ${centroInternamiento}, 20, 20);
+            doc.text(Registro de Internos del Día ${fechaSeleccionada}, 20, 30);
 
-        document.getElementById('descargarPDFBtn').addEventListener('click', () => {
+            const data = registros.map(registro => [
+                registro.fecha, 
+                registro.hora, 
+                registro.motivoOrdinario, 
+                registro.motivoExtraordinario, 
+                registro.excarcelados, 
+                registro.presentes, 
+                registro.total, 
+                registro.custodioResponsable, 
+                registro.personalDGRS
+            ]);
+
+            const columns = [
+                'Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+            ];
+
+            doc.autoTable({
+                head: [columns],
+                body: data,
+                startY: 40
+            });
+
+            doc.save(registro_internos_${fechaSeleccionada}.pdf);
+        }
+
+        function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'landscape' });
-            doc.text('Registro Internos', 120, 10);
-            doc.autoTable({ html: '#registroPreview' });
-            doc.save('registro_internos.pdf');
+            const doc = new jsPDF('landscape');
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+
+            let startY = 20;
+            let centroInternamiento = document.getElementById('centroInternamiento').value.toUpperCase();
+
+            Object.keys(registrosPorFecha).forEach(fecha => {
+                let registros = registrosPorFecha[fecha];
+
+                doc.setFontSize(18);
+                doc.text(Centro de Internamiento: ${centroInternamiento}, 20, startY);
+                doc.text(Registro de Internos del Día ${fecha}, 20, startY + 10);
+
+                const data = registros.map(registro => [
+                    registro.fecha, 
+                    registro.hora, 
+                    registro.motivoOrdinario, 
+                    registro.motivoExtraordinario, 
+                    registro.excarcelados, 
+                    registro.presentes, 
+                    registro.total, 
+                    registro.custodioResponsable, 
+                    registro.personalDGRS
+                ]);
+
+                const columns = [
+                    'Fecha', 'Hora', 'Motivo Ordinario', 'Motivo Extraordinario', 'Excarcelados', 'Presentes', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'
+                ];
+
+                doc.autoTable({
+                    head: [columns],
+                    body: data,
+                    startY: startY + 20
+                });
+
+                startY = doc.lastAutoTable.finalY + 20;
+            });
+
+            doc.save('registro_internos_completo.pdf');
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('loggedIn');
+            window.location.href = 'index.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            actualizarFechasDisponibles();
         });
     </script>
 </body>

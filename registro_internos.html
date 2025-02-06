@@ -120,22 +120,22 @@
                 return;
             }
 
-            if (registros.length < 10) {
-                if (!registroGuardado) {
-                    registros.push(registro);
-                    registrosPorFecha[fecha] = registros;
-                    localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-                    registroGuardado = true;
-                    alert('Registro guardado con éxito.');
-                    actualizarFechasDisponibles();
-                    mostrarRegistrosPorFecha();
-                } else {
-                    alert('Ya se ha guardado un registro para este día. No se pueden guardar más registros.');
-                }
-            } else {
-                alert('Se han alcanzado los 10 registros para esta fecha.');
-            }
-        }
+         //    if (registros.length < 10) {
+        //        if (!registroGuardado) {
+         //           registros.push(registro);
+           //         registrosPorFecha[fecha] = registros;
+             //       localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
+               //     registroGuardado = true;
+                 //   alert('Registro guardado con éxito.');
+                   // actualizarFechasDisponibles();
+                 //   mostrarRegistrosPorFecha();
+                //} else {
+                   // alert('Ya se ha guardado un registro para este día. No se pueden guardar más registros.');
+               // }
+        //    } else {
+         //       alert('Se han alcanzado los 10 registros para esta fecha.');
+        //    }
+        }//
 
         function mostrarRegistrosPorFecha() {
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;

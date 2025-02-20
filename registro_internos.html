@@ -83,30 +83,22 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: "landscape" });
 
-            const img = document.getElementById('logo');
-            const imgWidth = 40, imgHeight = 40;
+            const img = new Image();
+            img.src = "logo_sspc2.png"; 
+            img.onload = function () {
+                doc.addImage(img, 'PNG', 10, 10, 40, 40);
+                doc.setFontSize(16);
+                doc.text('DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES', 105, 20, { align: "center" });
+                doc.setFontSize(14);
+                doc.text('Registro de Internos', 105, 30, { align: "center" });
 
-            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal DGRS'];
-            const tableData = registros.map(r => [r.fecha, r.hora, r.motivo, r.excarceladosH, r.excarceladosM, r.presentesH, r.presentesM, r.total, r.custodioResponsable, r.personalDGRS]);
+                const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal DGRS'];
+                const tableData = registros.map(r => [r.fecha, r.hora, r.motivo, r.excarceladosH, r.excarceladosM, r.presentesH, r.presentesM, r.total, r.custodioResponsable, r.personalDGRS]);
 
-            // Convertir imagen a base64
-            const canvas = document.createElement("canvas");
-            const ctx = canvas.getContext("2d");
-            canvas.width = imgWidth;
-            canvas.height = imgHeight;
-            ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
-            const imgData = canvas.toDataURL("image/png");
+                doc.autoTable({ startY: 50, head: [headers], body: tableData, styles: { fontSize: 10 } });
 
-            doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
-            doc.setFontSize(14);
-            doc.text('DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES', 60, 20);
-            doc.setFontSize(12);
-            doc.text('Registro de Internos', 60, 30);
-            doc.text(`Fecha: ${fecha}`, 60, 40);
-
-            doc.autoTable({ startY: 50, head: [headers], body: tableData, styles: { fontSize: 10 } });
-
-            doc.save(`Registro_${fecha}.pdf`);
+                doc.save(`Registro_${fecha}.pdf`);
+            };
         }
 
         function guardarRegistro() {

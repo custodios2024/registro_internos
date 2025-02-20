@@ -71,37 +71,6 @@
     </div>
 
     <script>
-        function sumarTotal() {
-            const excarceladosH = parseInt(document.getElementById('excarceladosH').value) || 0;
-            const excarceladosM = parseInt(document.getElementById('excarceladosM').value) || 0;
-            const presentesH = parseInt(document.getElementById('presentesH').value) || 0;
-            const presentesM = parseInt(document.getElementById('presentesM').value) || 0;
-
-            document.getElementById('total').value = excarceladosH + excarceladosM + presentesH + presentesM;
-        }
-
-        function guardarRegistro() {
-            const fecha = document.getElementById('fecha').value;
-            const registros = JSON.parse(localStorage.getItem('registros')) || {};
-
-            if (!registros[fecha]) registros[fecha] = [];
-            registros[fecha].push({
-                fecha, hora: document.getElementById('hora').value,
-                motivo: document.getElementById('motivo').value,
-                excarceladosH: document.getElementById('excarceladosH').value,
-                excarceladosM: document.getElementById('excarceladosM').value,
-                presentesH: document.getElementById('presentesH').value,
-                presentesM: document.getElementById('presentesM').value,
-                total: document.getElementById('total').value,
-                custodioResponsable: document.getElementById('custodioResponsable').value,
-                personalDGRS: document.getElementById('personalDGRS').value
-            });
-
-            localStorage.setItem('registros', JSON.stringify(registros));
-            alert('Registro guardado con éxito.');
-            actualizarFechas();
-        }
-
         function exportarPDF() {
             const fecha = document.getElementById('fechaSeleccion').value;
             const registros = JSON.parse(localStorage.getItem('registros')) || {};
@@ -132,26 +101,16 @@
 
                 doc.save(`Registro_${fecha}.pdf`);
             };
-        }
 
-        function actualizarFechas() {
-            const select = document.getElementById('fechaSeleccion');
-            select.innerHTML = '';
-            const registros = JSON.parse(localStorage.getItem('registros')) || {};
-            Object.keys(registros).forEach(fecha => {
-                const option = document.createElement('option');
-                option.value = fecha;
-                option.textContent = fecha;
-                select.appendChild(option);
-            });
+            img.onerror = function () {
+                alert('No se pudo cargar el logo. Asegúrate de que "logo_sspc2.png" esté en la misma carpeta.');
+            };
         }
 
         function cerrarSesion() {
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
         }
-
-        actualizarFechas();
     </script>
 </body>
 </html>

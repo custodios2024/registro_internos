@@ -186,12 +186,18 @@
         }
 
         function exportarPDF() {
-            const { jsPDF } = window.jspdf; // Corregido para acceder correctamente a jsPDF
-            const doc = new jsPDF();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape');
             const form = document.getElementById('registroForm');
             const formData = new FormData(form);
 
             const centroInternamiento = document.getElementById('centroInternamiento').value;
+            const logo = 'logo_sspc2.png'; // Ruta al logo en la página
+
+            // Agregar el logo al PDF (ajustando tamaño)
+            doc.addImage(logo, 'PNG', 10, 10, 30, 20);
+
+            // Título centrado
             doc.setFontSize(14);
             doc.text(centroInternamiento, 105, 20, null, null, 'center');
             doc.text("Registro Completo", 105, 30, null, null, 'center');
@@ -216,11 +222,17 @@
 
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const doc = new jsPDF('landscape');
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
             let registros = Object.values(registrosPorFecha).flat();
             
             const centroInternamiento = document.getElementById('centroInternamiento').value;
+            const logo = 'logo_sspc2.png'; // Ruta al logo
+
+            // Agregar logo
+            doc.addImage(logo, 'PNG', 10, 10, 30, 20);
+
+            // Título centrado
             doc.setFontSize(14);
             doc.text(centroInternamiento, 105, 20, null, null, 'center');
             doc.text("Registro Completo", 105, 30, null, null, 'center');

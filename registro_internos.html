@@ -4,184 +4,111 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registro de Internos</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.8/jspdf.plugin.autotable.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
-        h2 { text-align: center; margin-top: 60px; }
-        h3 { text-align: center; margin-top: 20px; }
-        label { font-weight: bold; }
-        input, button, select { width: 100%; margin-bottom: 10px; padding: 10px; }
-        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; }
-        .btn:hover { background-color: #0056b3; }
-        .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
-        .record-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
-        .select-container { margin-bottom: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            margin-top: 60px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, button, select {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+        .btn {
+            background-color: #00bfff; /* Azul celeste */
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #009acd;
+        }
+        .output {
+            white-space: pre-wrap;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .record-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+            padding: 10px;
+        }
+        .logo {
+            display: block;
+            margin: 0 auto;
+            width: 100px;
+            height: 96px;
+        }
     </style>
 </head>
 <body>
-    <script>
-        // Verificar si el usuario está autenticado
-        const loggedIn = localStorage.getItem('loggedIn');
-        if (!loggedIn) {
-            // Redirige a la página de inicio de sesión si no está autenticado
-            window.location.href = 'index.html';
-        }
-    </script>
     <div class="container">
-        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px; height: auto;">
-        <h3 id="centroInternamientoHeader" style="text-align: center; margin-top: 60px;">Centro de Internamiento:</h3>
-        <input type="text" id="centroInternamiento" name="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" required>
+        <h2>Registro de Internos del Día</h2>
+        <label for="centroInternamiento">Centro de Internamiento:</label>
+        <input type="text" id="centroInternamiento" value="DIRECCIÓN DE MEDIDAS DE EJECUCIÓN PARA ADOLESCENTES">
 
-        <h2 style="margin-top: 20px;">Registro de Internos</h2>
-        <form id="registroForm">
-            <label for="fecha">Fecha:</label>
-            <input type="date" id="fecha" name="fecha" required>
-
-            <label for="hora">Hora:</label>
-            <input type="time" id="hora" name="hora" required>
-
-            <label for="motivo">Motivo:</label>
-            <input type="text" id="motivo" name="motivo" required>
-
-            <label for="excarceladosH">Excarcelados (Hombres):</label>
-            <input type="number" id="excarceladosH" name="excarceladosH" required oninput="sumarTotal()">
-
-            <label for="excarceladosM">Excarcelados (Mujeres):</label>
-            <input type="number" id="excarceladosM" name="excarceladosM" required oninput="sumarTotal()">
-
-            <label for="presentesH">Presentes (Hombres):</label>
-            <input type="number" id="presentesH" name="presentesH" required oninput="sumarTotal()">
-
-            <label for="presentesM">Presentes (Mujeres):</label>
-            <input type="number" id="presentesM" name="presentesM" required oninput="sumarTotal()">
-
-            <label for="total">Total:</label>
-            <input type="number" id="total" name="total" required readonly>
-
-            <label for="custodioResponsable">Custodio Responsable:</label>
-            <input type="text" id="custodioResponsable" name="custodioResponsable" required>
-
-            <label for="personalDGRS">Personal de la D.G.R.S.:</label>
-            <input type="text" id="personalDGRS" name="personalDGRS" required>
-
-            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
-            <div class="select-container">
-                <label for="fechasSeleccion">Selecciona Fechas para Exportar al PDF Completo:</label>
-                <select id="fechasSeleccion" multiple onchange="mostrarRegistrosPorFechas()">
-                    <!-- Fechas se agregarán dinámicamente aquí -->
-                </select>
-            </div>
-            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
-            <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
-        </form>
-        <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()">
-            <!-- Fechas se agregarán dinámicamente aquí -->
-        </select>
-        <div class="record-list" id="recordList"></div>
-        <pre id="output" class="output"></pre>
+        <label for="fecha">Fecha:</label>
+        <input type="date" id="fecha">
+        
+        <label for="hora">Hora:</label>
+        <input type="time" id="hora">
+        
+        <label for="motivo">Motivo:</label>
+        <input type="text" id="motivo">
+        
+        <label for="excarceladosH">Excarcelados (H):</label>
+        <input type="number" id="excarceladosH">
+        
+        <label for="excarceladosM">Excarcelados (M):</label>
+        <input type="number" id="excarceladosM">
+        
+        <label for="presentesH">Presentes (H):</label>
+        <input type="number" id="presentesH">
+        
+        <label for="presentesM">Presentes (M):</label>
+        <input type="number" id="presentesM">
+        
+        <label for="total">Total:</label>
+        <input type="number" id="total">
+        
+        <label for="custodioResponsable">Custodio Responsable:</label>
+        <input type="text" id="custodioResponsable">
+        
+        <label for="personalDGRS">Personal D.G.R.S.:</label>
+        <input type="text" id="personalDGRS">
+        
+        <button class="btn" onclick="exportarPDF()">Generar PDF</button>
+        <button class="btn" onclick="exportarPDFCompleto()">Generar PDF Completo</button>
+        <button class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
     </div>
 
     <script>
-        // Asegúrate de que jsPDF esté bien cargado
-        const { jsPDF } = window.jspdf;
-
-        let registroGuardado = false;
-
-        function sumarTotal() {
-            const excarceladosH = parseInt(document.getElementById('excarceladosH').value) || 0;
-            const excarceladosM = parseInt(document.getElementById('excarceladosM').value) || 0;
-            const presentesH = parseInt(document.getElementById('presentesH').value) || 0;
-            const presentesM = parseInt(document.getElementById('presentesM').value) || 0;
-
-            document.getElementById('total').value = excarceladosH + excarceladosM + presentesH + presentesM;
-        }
-
-        function guardarRegistro() {
-            const form = document.getElementById('registroForm');
-            const formData = new FormData(form);
-
-            let registro = {};
-            formData.forEach((value, key) => {
-                if (key !== 'centroInternamiento') { // Excluyendo centroInternamiento
-                    registro[key] = value.toUpperCase();
-                }
-            });
-
-            const fecha = registro.fecha; // Extraemos la fecha del registro
-            const hora = registro.hora; // Extraemos la hora del registro
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fecha] || [];
-
-            // Verifica si ya se guardó un registro con la misma hora
-            if (registros.some(reg => reg.hora === hora)) {
-                alert('Ya se ha guardado un registro con esta hora. No se puede guardar el mismo registro nuevamente.');
-                return;
-            }
-
-            if (registros.length < 10) {
-                registros.push(registro);
-                registrosPorFecha[fecha] = registros;
-                localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-                alert('Registro guardado con éxito.');
-                actualizarFechasDisponibles();
-                mostrarRegistrosPorFecha();
-            } else {
-                alert('Se han alcanzado los 10 registros para esta fecha.');
-            }
-        }
-
-        function mostrarRegistrosPorFecha() {
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fechaSeleccionada] || [];
-            const recordList = document.getElementById('recordList');
-            recordList.innerHTML = '';
-
-            registros.forEach((registro, index) => {
-                const registroText = document.createElement('div');
-                registroText.innerText = `${index + 1}. ${registro.fecha} ${registro.hora} - ${registro.motivo}`;
-                recordList.appendChild(registroText);
-            });
-        }
-
-        function mostrarRegistrosPorFechas() {
-            const fechasSeleccionadas = Array.from(document.getElementById('fechasSeleccion').options)
-                .filter(option => option.selected)
-                .map(option => option.value);
-
-            if (fechasSeleccionadas.length === 0) {
-                alert('Por favor, selecciona al menos una fecha.');
-                return;
-            }
-
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = fechasSeleccionadas.flatMap(fecha => registrosPorFecha[fecha] || []);
-            
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const centroInternamiento = document.getElementById('centroInternamiento').value;
-            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'];
-            const data = registros.map(registro => [
-                registro.fecha, registro.hora, registro.motivo,
-                registro.excarceladosH, registro.excarceladosM,
-                registro.presentesH, registro.presentesM,
-                registro.total, registro.custodioResponsable,
-                registro.personalDGRS
-            ]);
-
-            doc.autoTable({
-                head: [headers],
-                body: data
-            });
-
-            doc.save('registro_internos_completo.pdf');
-        }
-
         function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('landscape'); // Hoja horizontal
+
+            const logo = new Image();
+            logo.src = 'logo_sspc2.png'; // Ruta al logo
+
             const fecha = document.getElementById('fecha').value;
             const hora = document.getElementById('hora').value;
             const motivo = document.getElementById('motivo').value;
@@ -192,33 +119,49 @@
             const total = document.getElementById('total').value;
             const custodioResponsable = document.getElementById('custodioResponsable').value;
             const personalDGRS = document.getElementById('personalDGRS').value;
-            
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
             const centroInternamiento = document.getElementById('centroInternamiento').value;
-            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'];
-            const data = [[
-                fecha, hora, motivo, excarceladosH, excarceladosM,
-                presentesH, presentesM, total, custodioResponsable, personalDGRS
-            ]];
+            
+            // Agregar logo
+            logo.onload = () => {
+                doc.addImage(logo, 'PNG', 10, 10, 30, 28); // Ajusta la posición y tamaño
 
-            doc.autoTable({
-                head: [headers],
-                body: data
-            });
+                // Título del Centro de Internamiento
+                doc.setFontSize(16);
+                doc.text(centroInternamiento, 105, 20, null, null, 'center');
 
-            doc.save('registro_internos.pdf');
+                // Título del Registro
+                doc.setFontSize(18);
+                doc.text('Registro Completo', 105, 40, null, null, 'center');
+                doc.setFontSize(12);
+                doc.text('Fecha: ' + fecha + ' - Hora: ' + hora, 105, 50, null, null, 'center');
+
+                // Tabla de datos
+                const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'];
+                const data = [[fecha, hora, motivo, excarceladosH, excarceladosM, presentesH, presentesM, total, custodioResponsable, personalDGRS]];
+
+                doc.autoTable({
+                    head: [headers],
+                    body: data,
+                    startY: 60,
+                    theme: 'grid'
+                });
+
+                doc.save('registro_internos.pdf');
+            };
         }
 
         function exportarPDFCompleto() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const centroInternamiento = document.getElementById('centroInternamiento').value;
-            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'];
-            
+            const doc = new jsPDF('landscape'); // Hoja horizontal
+
+            const logo = new Image();
+            logo.src = 'logo_sspc2.png'; // Ruta al logo
+
+            // Registros completos
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
             let registros = Object.values(registrosPorFecha).flat();
-            
+            const centroInternamiento = document.getElementById('centroInternamiento').value;
+            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados (H)', 'Excarcelados (M)', 'Presentes (H)', 'Presentes (M)', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'];
             const data = registros.map(registro => [
                 registro.fecha, registro.hora, registro.motivo,
                 registro.excarceladosH, registro.excarceladosM,
@@ -227,34 +170,36 @@
                 registro.personalDGRS
             ]);
 
-            doc.autoTable({
-                head: [headers],
-                body: data
-            });
+            // Agregar logo
+            logo.onload = () => {
+                doc.addImage(logo, 'PNG', 10, 10, 30, 28); // Ajusta la posición y tamaño
 
-            doc.save('registro_internos_completo.pdf');
+                // Título del Centro de Internamiento
+                doc.setFontSize(16);
+                doc.text(centroInternamiento, 105, 20, null, null, 'center');
+
+                // Título del Registro Completo
+                doc.setFontSize(18);
+                doc.text('Registro Completo', 105, 40, null, null, 'center');
+                doc.setFontSize(12);
+                doc.text('Fecha: ' + new Date().toLocaleDateString(), 105, 50, null, null, 'center');
+
+                // Tabla de registros
+                doc.autoTable({
+                    head: [headers],
+                    body: data,
+                    startY: 60,
+                    theme: 'grid'
+                });
+
+                doc.save('registro_internos_completo.pdf');
+            };
         }
 
         function cerrarSesion() {
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
         }
-
-        function actualizarFechasDisponibles() {
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let fechas = Object.keys(registrosPorFecha);
-            const fechaSeleccion = document.getElementById('fechaSeleccion');
-            fechaSeleccion.innerHTML = '';
-
-            fechas.forEach(fecha => {
-                const option = document.createElement('option');
-                option.value = fecha;
-                option.innerText = fecha;
-                fechaSeleccion.appendChild(option);
-            });
-        }
-
-        actualizarFechasDisponibles();
     </script>
 </body>
 </html>

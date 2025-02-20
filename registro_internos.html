@@ -19,13 +19,12 @@
 </head>
 <body>
     <script>
-        const loggedIn = localStorage.getItem('loggedIn');
-        if (!loggedIn) {
+        if (!localStorage.getItem('loggedIn')) {
             window.location.href = 'index.html';
         }
     </script>
     <div class="container">
-        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px;">
+        <img id="logo" src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px;">
         <h3>DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES</h3>
 
         <h2>Registro de Internos</h2>
@@ -40,16 +39,16 @@
             <input type="text" id="motivo" required>
 
             <label for="excarceladosH">Excarcelados (Hombres):</label>
-            <input type="number" id="excarceladosH" required oninput="sumarTotal()">
+            <input type="number" id="excarceladosH" required>
 
             <label for="excarceladosM">Excarcelados (Mujeres):</label>
-            <input type="number" id="excarceladosM" required oninput="sumarTotal()">
+            <input type="number" id="excarceladosM" required>
 
             <label for="presentesH">Presentes (Hombres):</label>
-            <input type="number" id="presentesH" required oninput="sumarTotal()">
+            <input type="number" id="presentesH" required>
 
             <label for="presentesM">Presentes (Mujeres):</label>
-            <input type="number" id="presentesM" required oninput="sumarTotal()">
+            <input type="number" id="presentesM" required>
 
             <label for="total">Total:</label>
             <input type="number" id="total" required readonly>
@@ -66,17 +65,17 @@
         </form>
 
         <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"></select>
+        <select id="fechaSeleccion"></select>
         <div class="record-list" id="recordList"></div>
     </div>
 
     <script>
         function exportarPDF() {
             const fecha = document.getElementById('fechaSeleccion').value;
-            const registros = JSON.parse(localStorage.getItem('registros')) || {};
-            const data = registros[fecha] || [];
+            const registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            const registros = registrosPorFecha[fecha] || [];
 
-            if (data.length === 0) {
+            if (registros.length === 0) {
                 alert('No hay registros para esta fecha.');
                 return;
             }
@@ -84,33 +83,72 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: "landscape" });
 
-            const img = new Image();
-            img.src = 'logo_sspc2.png';
-            img.onload = function () {
-                doc.addImage(img, 'PNG', 10, 10, 30, 30);
-                doc.setFontSize(14);
-                doc.text('DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES', 50, 20);
-                doc.setFontSize(12);
-                doc.text('Registro de Internos', 50, 30);
-                doc.text(`Fecha: ${fecha}`, 50, 40);
+            const img = document.getElementById('logo');
+            const imgWidth = 40, imgHeight = 40;
 
-                const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal DGRS'];
-                const tableData = data.map(r => [r.fecha, r.hora, r.motivo, r.excarceladosH, r.excarceladosM, r.presentesH, r.presentesM, r.total, r.custodioResponsable, r.personalDGRS]);
+            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal DGRS'];
+            const tableData = registros.map(r => [r.fecha, r.hora, r.motivo, r.excarceladosH, r.excarceladosM, r.presentesH, r.presentesM, r.total, r.custodioResponsable, r.personalDGRS]);
 
-                doc.autoTable({ startY: 50, head: [headers], body: tableData, styles: { fontSize: 10 } });
+            // Convertir imagen a base64
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            canvas.width = imgWidth;
+            canvas.height = imgHeight;
+            ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
+            const imgData = canvas.toDataURL("image/png");
 
-                doc.save(`Registro_${fecha}.pdf`);
-            };
+            doc.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+            doc.setFontSize(14);
+            doc.text('DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES', 60, 20);
+            doc.setFontSize(12);
+            doc.text('Registro de Internos', 60, 30);
+            doc.text(`Fecha: ${fecha}`, 60, 40);
 
-            img.onerror = function () {
-                alert('No se pudo cargar el logo. Asegúrate de que "logo_sspc2.png" esté en la misma carpeta.');
-            };
+            doc.autoTable({ startY: 50, head: [headers], body: tableData, styles: { fontSize: 10 } });
+
+            doc.save(`Registro_${fecha}.pdf`);
+        }
+
+        function guardarRegistro() {
+            const form = document.getElementById('registroForm');
+            const formData = new FormData(form);
+            let registro = {};
+            formData.forEach((value, key) => registro[key] = value);
+
+            const fecha = registro.fecha;
+            if (!fecha) {
+                alert("Selecciona una fecha.");
+                return;
+            }
+
+            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+            registrosPorFecha[fecha] = registrosPorFecha[fecha] || [];
+            registrosPorFecha[fecha].push(registro);
+
+            localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
+            alert('Registro guardado con éxito.');
+            actualizarFechasDisponibles();
+        }
+
+        function actualizarFechasDisponibles() {
+            const fechaSeleccion = document.getElementById('fechaSeleccion');
+            const registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+
+            fechaSeleccion.innerHTML = '';
+            Object.keys(registrosPorFecha).forEach(fecha => {
+                const option = document.createElement('option');
+                option.value = fecha;
+                option.textContent = fecha;
+                fechaSeleccion.appendChild(option);
+            });
         }
 
         function cerrarSesion() {
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
         }
+
+        actualizarFechasDisponibles();
     </script>
 </body>
 </html>

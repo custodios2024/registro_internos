@@ -8,15 +8,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 10px; }
-        h2, h3 { text-align: center; margin-top: 20px; }
-        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; padding: 10px 20px; margin-top: 10px; border-radius: 5px; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
+        h2, h3 { text-align: center; margin-top: 10px; }
+        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; padding: 10px 15px; margin-top: 10px; border-radius: 5px; display: block; width: 100%; }
         .btn:hover { background-color: #0056b3; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 15px; text-align: center; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 10px; text-align: left; border: 1px solid #ddd; }
         th { background-color: #007bff; color: white; }
         input { padding: 8px; width: 100%; box-sizing: border-box; }
-        .actions { display: flex; justify-content: space-between; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -28,49 +27,32 @@
     </script>
 
     <div class="container">
-        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px; height: auto;">
+        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px;">
         <h3>Centro de Internamiento:</h3>
         <input type="text" id="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" readonly>
 
         <h2>Registro de Internos</h2>
 
+        <!-- Tabla Vertical en la Web -->
         <table>
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Hora</th>
-                    <th>Motivo</th>
-                    <th>Excarcelados H</th>
-                    <th>Excarcelados M</th>
-                    <th>Presentes H</th>
-                    <th>Presentes M</th>
-                    <th>Total</th>
-                    <th>Custodio Responsable</th>
-                    <th>Personal D.G.R.S.</th>
-                </tr>
-            </thead>
             <tbody>
-                <tr>
-                    <td><input type="date" id="fecha" required></td>
-                    <td><input type="time" id="hora" required></td>
-                    <td><input type="text" id="motivo" required></td>
-                    <td><input type="number" id="excarceladosH" required oninput="sumarTotal()"></td>
-                    <td><input type="number" id="excarceladosM" required oninput="sumarTotal()"></td>
-                    <td><input type="number" id="presentesH" required oninput="sumarTotal()"></td>
-                    <td><input type="number" id="presentesM" required oninput="sumarTotal()"></td>
-                    <td><input type="number" id="total" required readonly></td>
-                    <td><input type="text" id="custodioResponsable" required></td>
-                    <td><input type="text" id="personalDGRS" required></td>
-                </tr>
+                <tr><th>Fecha</th><td><input type="date" id="fecha" required></td></tr>
+                <tr><th>Hora</th><td><input type="time" id="hora" required></td></tr>
+                <tr><th>Motivo</th><td><input type="text" id="motivo" required></td></tr>
+                <tr><th>Excarcelados Hombres</th><td><input type="number" id="excarceladosH" required oninput="sumarTotal()"></td></tr>
+                <tr><th>Excarcelados Mujeres</th><td><input type="number" id="excarceladosM" required oninput="sumarTotal()"></td></tr>
+                <tr><th>Presentes Hombres</th><td><input type="number" id="presentesH" required oninput="sumarTotal()"></td></tr>
+                <tr><th>Presentes Mujeres</th><td><input type="number" id="presentesM" required oninput="sumarTotal()"></td></tr>
+                <tr><th>Total</th><td><input type="number" id="total" required readonly></td></tr>
+                <tr><th>Custodio Responsable</th><td><input type="text" id="custodioResponsable" required></td></tr>
+                <tr><th>Personal D.G.R.S.</th><td><input type="text" id="personalDGRS" required></td></tr>
             </tbody>
         </table>
 
-        <div class="actions">
-            <button class="btn" onclick="guardarRegistro()">Guardar</button>
-            <button class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
-            <button class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
-            <button class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
-        </div>
+        <button class="btn" onclick="guardarRegistro()">Guardar</button>
+        <button class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+        <button class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
+        <button class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
 
     <script>
@@ -104,15 +86,19 @@
         }
 
         function exportarPDF() {
-            const doc = new jsPDF();
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "landscape" });
+
+            doc.text('Registro de Internos', 14, 10);
+
             const registros = JSON.parse(localStorage.getItem('registros')) || [];
-            
-            doc.text('Registro de Internos', 20, 10);
-
             const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'];
-            const data = registros.map(reg => [reg.fecha, reg.hora, reg.motivo, reg.excarceladosH, reg.excarceladosM, reg.presentesH, reg.presentesM, reg.total, reg.custodioResponsable, reg.personalDGRS]);
+            const data = registros.map(reg => [
+                reg.fecha, reg.hora, reg.motivo, reg.excarceladosH, reg.excarceladosM, 
+                reg.presentesH, reg.presentesM, reg.total, reg.custodioResponsable, reg.personalDGRS
+            ]);
 
-            doc.autoTable({ head: [headers], body: data });
+            doc.autoTable({ head: [headers], body: data, startY: 20 });
             doc.save('registro_internos.pdf');
         }
 

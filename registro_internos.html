@@ -9,29 +9,24 @@
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
         .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
-        h2 { text-align: center; margin-top: 60px; }
-        h3 { text-align: center; margin-top: 20px; }
+        h2, h3 { text-align: center; }
         label { font-weight: bold; }
         input, button, select { width: 100%; margin-bottom: 10px; padding: 10px; }
         .btn { background-color: #007bff; color: white; border: none; cursor: pointer; }
         .btn:hover { background-color: #0056b3; }
-        .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
-        .record-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
-        .select-container { margin-bottom: 20px; }
+        .record-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; }
     </style>
 </head>
 <body>
     <script>
-        // Verificar si el usuario está autenticado
         const loggedIn = localStorage.getItem('loggedIn');
         if (!loggedIn) {
             window.location.href = 'index.html';
         }
     </script>
     <div class="container">
-        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px; height: auto;">
-        <h3 id="centroInternamientoHeader">Centro de Internamiento:</h3>
-        <input type="text" id="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" required>
+        <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px;">
+        <h3>DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES</h3>
 
         <h2>Registro de Internos</h2>
         <form id="registroForm">
@@ -77,75 +72,78 @@
 
     <script>
         function sumarTotal() {
-            const excH = parseInt(document.getElementById('excarceladosH').value) || 0;
-            const excM = parseInt(document.getElementById('excarceladosM').value) || 0;
-            const preH = parseInt(document.getElementById('presentesH').value) || 0;
-            const preM = parseInt(document.getElementById('presentesM').value) || 0;
-            document.getElementById('total').value = excH + excM + preH + preM;
+            const excarceladosH = parseInt(document.getElementById('excarceladosH').value) || 0;
+            const excarceladosM = parseInt(document.getElementById('excarceladosM').value) || 0;
+            const presentesH = parseInt(document.getElementById('presentesH').value) || 0;
+            const presentesM = parseInt(document.getElementById('presentesM').value) || 0;
+
+            document.getElementById('total').value = excarceladosH + excarceladosM + presentesH + presentesM;
         }
 
         function guardarRegistro() {
-            const form = document.getElementById('registroForm');
-            const formData = new FormData(form);
+            const fecha = document.getElementById('fecha').value;
+            const registros = JSON.parse(localStorage.getItem('registros')) || {};
 
-            let registro = {};
-            formData.forEach((value, key) => {
-                registro[key] = value.toUpperCase();
+            if (!registros[fecha]) registros[fecha] = [];
+            registros[fecha].push({
+                fecha, hora: document.getElementById('hora').value,
+                motivo: document.getElementById('motivo').value,
+                excarceladosH: document.getElementById('excarceladosH').value,
+                excarceladosM: document.getElementById('excarceladosM').value,
+                presentesH: document.getElementById('presentesH').value,
+                presentesM: document.getElementById('presentesM').value,
+                total: document.getElementById('total').value,
+                custodioResponsable: document.getElementById('custodioResponsable').value,
+                personalDGRS: document.getElementById('personalDGRS').value
             });
 
-            const fecha = registro.fecha;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fecha] || [];
-
-            registros.push(registro);
-            registrosPorFecha[fecha] = registros;
-            localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-
-            alert('Registro guardado.');
-            actualizarFechasDisponibles();
-        }
-
-        function actualizarFechasDisponibles() {
-            const fechaSeleccion = document.getElementById('fechaSeleccion');
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-
-            fechaSeleccion.innerHTML = '';
-            Object.keys(registrosPorFecha).forEach(fecha => {
-                const option = document.createElement('option');
-                option.value = fecha;
-                option.textContent = fecha;
-                fechaSeleccion.appendChild(option);
-            });
+            localStorage.setItem('registros', JSON.stringify(registros));
+            alert('Registro guardado con éxito.');
+            actualizarFechas();
         }
 
         function exportarPDF() {
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fechaSeleccionada] || [];
+            const fecha = document.getElementById('fechaSeleccion').value;
+            const registros = JSON.parse(localStorage.getItem('registros')) || {};
+            const data = registros[fecha] || [];
+
+            if (data.length === 0) {
+                alert('No hay registros para esta fecha.');
+                return;
+            }
 
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF({ orientation: "landscape" });
 
-            const headers = [
-                'Fecha', 'Hora', 'Motivo', 
-                'Excarcelados H', 'Excarcelados M', 
-                'Presentes H', 'Presentes M', 
-                'Total', 'Custodio Responsable', 'Personal DGRS'
-            ];
+            const img = new Image();
+            img.src = 'logo_sspc2.png';
+            img.onload = function () {
+                doc.addImage(img, 'PNG', 10, 10, 30, 30);
+                doc.setFontSize(14);
+                doc.text('DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES', 50, 20);
+                doc.setFontSize(12);
+                doc.text('Registro de Internos', 50, 30);
+                doc.text(`Fecha: ${fecha}`, 50, 40);
 
-            const data = registros.map(r => [
-                r.fecha, r.hora, r.motivo, 
-                r.excarceladosH, r.excarceladosM, 
-                r.presentesH, r.presentesM, 
-                r.total, r.custodioResponsable, r.personalDGRS
-            ]);
+                const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal DGRS'];
+                const tableData = data.map(r => [r.fecha, r.hora, r.motivo, r.excarceladosH, r.excarceladosM, r.presentesH, r.presentesM, r.total, r.custodioResponsable, r.personalDGRS]);
 
-            doc.autoTable({
-                head: [headers],
-                body: data
+                doc.autoTable({ startY: 50, head: [headers], body: tableData, styles: { fontSize: 10 } });
+
+                doc.save(`Registro_${fecha}.pdf`);
+            };
+        }
+
+        function actualizarFechas() {
+            const select = document.getElementById('fechaSeleccion');
+            select.innerHTML = '';
+            const registros = JSON.parse(localStorage.getItem('registros')) || {};
+            Object.keys(registros).forEach(fecha => {
+                const option = document.createElement('option');
+                option.value = fecha;
+                option.textContent = fecha;
+                select.appendChild(option);
             });
-
-            doc.save('registro_internos.pdf');
         }
 
         function cerrarSesion() {
@@ -153,7 +151,7 @@
             window.location.href = 'index.html';
         }
 
-        actualizarFechasDisponibles();
+        actualizarFechas();
     </script>
 </body>
 </html>

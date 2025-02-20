@@ -8,15 +8,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 10px; }
         h2, h3 { text-align: center; margin-top: 20px; }
-        label { font-weight: bold; }
-        input, button, select { width: 100%; margin-bottom: 10px; padding: 10px; }
-        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; padding: 10px 20px; margin-top: 10px; border-radius: 5px; }
         .btn:hover { background-color: #0056b3; }
-        .output { white-space: pre-wrap; background-color: #f9f9f9; padding: 10px; border-radius: 5px; }
-        .record-list { max-height: 200px; overflow-y: auto; border: 1px solid #ccc; margin-top: 20px; padding: 10px; }
-        .select-container { margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 15px; text-align: center; border: 1px solid #ddd; }
+        th { background-color: #007bff; color: white; }
+        input { padding: 8px; width: 100%; box-sizing: border-box; }
+        .actions { display: flex; justify-content: space-between; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -30,49 +30,47 @@
     <div class="container">
         <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px; height: auto;">
         <h3>Centro de Internamiento:</h3>
-        <input type="text" id="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" required>
+        <input type="text" id="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" readonly>
 
         <h2>Registro de Internos</h2>
-        <form id="registroForm">
-            <label for="fecha">Fecha:</label>
-            <input type="date" id="fecha" required>
 
-            <label for="hora">Hora:</label>
-            <input type="time" id="hora" required>
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Motivo</th>
+                    <th>Excarcelados H</th>
+                    <th>Excarcelados M</th>
+                    <th>Presentes H</th>
+                    <th>Presentes M</th>
+                    <th>Total</th>
+                    <th>Custodio Responsable</th>
+                    <th>Personal D.G.R.S.</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="date" id="fecha" required></td>
+                    <td><input type="time" id="hora" required></td>
+                    <td><input type="text" id="motivo" required></td>
+                    <td><input type="number" id="excarceladosH" required oninput="sumarTotal()"></td>
+                    <td><input type="number" id="excarceladosM" required oninput="sumarTotal()"></td>
+                    <td><input type="number" id="presentesH" required oninput="sumarTotal()"></td>
+                    <td><input type="number" id="presentesM" required oninput="sumarTotal()"></td>
+                    <td><input type="number" id="total" required readonly></td>
+                    <td><input type="text" id="custodioResponsable" required></td>
+                    <td><input type="text" id="personalDGRS" required></td>
+                </tr>
+            </tbody>
+        </table>
 
-            <label for="motivo">Motivo:</label>
-            <input type="text" id="motivo" required>
-
-            <label for="excarceladosH">Excarcelados (Hombres):</label>
-            <input type="number" id="excarceladosH" required oninput="sumarTotal()">
-
-            <label for="excarceladosM">Excarcelados (Mujeres):</label>
-            <input type="number" id="excarceladosM" required oninput="sumarTotal()">
-
-            <label for="presentesH">Presentes (Hombres):</label>
-            <input type="number" id="presentesH" required oninput="sumarTotal()">
-
-            <label for="presentesM">Presentes (Mujeres):</label>
-            <input type="number" id="presentesM" required oninput="sumarTotal()">
-
-            <label for="total">Total:</label>
-            <input type="number" id="total" required readonly>
-
-            <label for="custodioResponsable">Custodio Responsable:</label>
-            <input type="text" id="custodioResponsable" required>
-
-            <label for="personalDGRS">Personal de la D.G.R.S.:</label>
-            <input type="text" id="personalDGRS" required>
-
-            <button type="button" class="btn" onclick="guardarRegistro()">Guardar</button>
-            <button type="button" class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
-            <button type="button" class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
-            <button type="button" class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
-        </form>
-
-        <label for="fechaSeleccion">Selecciona Fecha para Ver Registros:</label>
-        <select id="fechaSeleccion" onchange="mostrarRegistrosPorFecha()"></select>
-        <div class="record-list" id="recordList"></div>
+        <div class="actions">
+            <button class="btn" onclick="guardarRegistro()">Guardar</button>
+            <button class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
+            <button class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
+            <button class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
+        </div>
     </div>
 
     <script>
@@ -85,61 +83,47 @@
         }
 
         function guardarRegistro() {
-            const formData = new FormData(document.getElementById('registroForm'));
-            let registro = {};
-            formData.forEach((value, key) => registro[key] = value.toUpperCase());
+            const registro = {
+                fecha: document.getElementById('fecha').value,
+                hora: document.getElementById('hora').value,
+                motivo: document.getElementById('motivo').value,
+                excarceladosH: document.getElementById('excarceladosH').value,
+                excarceladosM: document.getElementById('excarceladosM').value,
+                presentesH: document.getElementById('presentesH').value,
+                presentesM: document.getElementById('presentesM').value,
+                total: document.getElementById('total').value,
+                custodioResponsable: document.getElementById('custodioResponsable').value,
+                personalDGRS: document.getElementById('personalDGRS').value
+            };
 
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[registro.fecha] || [];
-
+            let registros = JSON.parse(localStorage.getItem('registros')) || [];
             registros.push(registro);
-            registrosPorFecha[registro.fecha] = registros;
-            localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
+            localStorage.setItem('registros', JSON.stringify(registros));
 
             alert('Registro guardado con éxito.');
-            actualizarFechasDisponibles();
         }
 
         function exportarPDF() {
-            const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fechaSeleccionada] || [];
-            generarPDF(registros, `registro_internos_${fechaSeleccionada}.pdf`);
+            const doc = new jsPDF();
+            const registros = JSON.parse(localStorage.getItem('registros')) || [];
+            
+            doc.text('Registro de Internos', 20, 10);
+
+            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'];
+            const data = registros.map(reg => [reg.fecha, reg.hora, reg.motivo, reg.excarceladosH, reg.excarceladosM, reg.presentesH, reg.presentesM, reg.total, reg.custodioResponsable, reg.personalDGRS]);
+
+            doc.autoTable({ head: [headers], body: data });
+            doc.save('registro_internos.pdf');
         }
 
         function exportarPDFCompleto() {
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = Object.values(registrosPorFecha).flat();
-            generarPDF(registros, 'registro_internos_completo.pdf');
-        }
-
-        function generarPDF(registros, fileName) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio', 'Personal D.G.R.S.'];
-            const data = registros.map(registro => Object.values(registro));
-
-            doc.text('Registro de Internos', 10, 10);
-            doc.autoTable({ startY: 20, head: [headers], body: data });
-            doc.save(fileName);
-        }
-
-        function actualizarFechasDisponibles() {
-            const fechaSeleccion = document.getElementById('fechaSeleccion');
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            fechaSeleccion.innerHTML = '';
-            Object.keys(registrosPorFecha).forEach(fecha => {
-                let option = new Option(fecha, fecha);
-                fechaSeleccion.appendChild(option);
-            });
+            exportarPDF();
         }
 
         function cerrarSesion() {
             localStorage.removeItem('loggedIn');
             window.location.href = 'index.html';
         }
-
-        actualizarFechasDisponibles();
     </script>
 </body>
 </html>

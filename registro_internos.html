@@ -25,7 +25,7 @@
     </script>
     <div class="container">
         <img id="logo" src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px;">
-        <h3>DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES</h3>
+        <h3 style="text-align: right; margin-right: 50px;">DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES</h3>
 
         <h2>Registro de Internos</h2>
         <form id="registroForm">
@@ -88,9 +88,9 @@
             img.onload = function () {
                 doc.addImage(img, 'PNG', 10, 10, 40, 40);
                 doc.setFontSize(16);
-                doc.text('DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES', 105, 20, { align: "center" });
+                doc.text('DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES', 150, 20, { align: "right" });
                 doc.setFontSize(14);
-                doc.text('Registro de Internos', 105, 30, { align: "center" });
+                doc.text('Registro de Internos', 150, 30, { align: "right" });
 
                 const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal DGRS'];
                 const tableData = registros.map(r => [r.fecha, r.hora, r.motivo, r.excarceladosH, r.excarceladosM, r.presentesH, r.presentesM, r.total, r.custodioResponsable, r.personalDGRS]);
@@ -102,22 +102,44 @@
         }
 
         function guardarRegistro() {
-            const form = document.getElementById('registroForm');
-            const formData = new FormData(form);
-            let registro = {};
-            formData.forEach((value, key) => registro[key] = value);
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
 
-            const fecha = registro.fecha;
-            if (!fecha) {
-                alert("Selecciona una fecha.");
+            if (!fecha || !hora) {
+                alert("Todos los campos son obligatorios.");
                 return;
             }
 
             let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
             registrosPorFecha[fecha] = registrosPorFecha[fecha] || [];
-            registrosPorFecha[fecha].push(registro);
 
+            if (registrosPorFecha[fecha].length >= 10) {
+                alert("Solo se permiten 10 registros por día.");
+                return;
+            }
+
+            const horaExiste = registrosPorFecha[fecha].some(registro => registro.hora === hora);
+            if (horaExiste) {
+                alert("Ya existe un registro con la misma hora en esta fecha. Usa una hora diferente.");
+                return;
+            }
+
+            const nuevoRegistro = {
+                fecha,
+                hora,
+                motivo: document.getElementById('motivo').value,
+                excarceladosH: document.getElementById('excarceladosH').value,
+                excarceladosM: document.getElementById('excarceladosM').value,
+                presentesH: document.getElementById('presentesH').value,
+                presentesM: document.getElementById('presentesM').value,
+                total: document.getElementById('total').value,
+                custodioResponsable: document.getElementById('custodioResponsable').value,
+                personalDGRS: document.getElementById('personalDGRS').value
+            };
+
+            registrosPorFecha[fecha].push(nuevoRegistro);
             localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
+
             alert('Registro guardado con éxito.');
             actualizarFechasDisponibles();
         }

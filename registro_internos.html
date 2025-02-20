@@ -8,62 +8,55 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.13/jspdf.plugin.autotable.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; background-color: #f4f4f4; }
-        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; }
-        h2, h3 { text-align: center; margin-top: 10px; }
-        .btn { background-color: #007bff; color: white; border: none; cursor: pointer; padding: 10px 15px; margin-top: 10px; border-radius: 5px; display: block; width: 100%; }
-        .btn:hover { background-color: #0056b3; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 10px; text-align: left; border: 1px solid #ddd; }
-        th { background-color: #007bff; color: white; }
-        input { padding: 8px; width: 100%; box-sizing: border-box; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; }
+        h2 { text-align: center; }
+        h3 { text-align: center; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; }
+        button { width: 100%; padding: 10px; background: #007bff; color: white; border: none; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background: #007bff; color: white; }
     </style>
 </head>
 <body>
-    <script>
-        // Verificar autenticación
-        if (!localStorage.getItem('loggedIn')) {
-            window.location.href = 'index.html';
-        }
-    </script>
-
     <div class="container">
         <img src="logo_sspc2.png" alt="Logo SSPC" style="display: block; margin: auto; width: 100px;">
-        <h3>Centro de Internamiento:</h3>
-        <input type="text" id="centroInternamiento" value="DIRECCIÓN DE EJECUCIÓN DE MEDIDAS PARA ADOLESCENTES" readonly>
-
         <h2>Registro de Internos</h2>
-
-        <!-- Tabla Vertical en la Web -->
-        <table>
-            <tbody>
-                <tr><th>Fecha</th><td><input type="date" id="fecha" required></td></tr>
-                <tr><th>Hora</th><td><input type="time" id="hora" required></td></tr>
-                <tr><th>Motivo</th><td><input type="text" id="motivo" required></td></tr>
-                <tr><th>Excarcelados Hombres</th><td><input type="number" id="excarceladosH" required oninput="sumarTotal()"></td></tr>
-                <tr><th>Excarcelados Mujeres</th><td><input type="number" id="excarceladosM" required oninput="sumarTotal()"></td></tr>
-                <tr><th>Presentes Hombres</th><td><input type="number" id="presentesH" required oninput="sumarTotal()"></td></tr>
-                <tr><th>Presentes Mujeres</th><td><input type="number" id="presentesM" required oninput="sumarTotal()"></td></tr>
-                <tr><th>Total</th><td><input type="number" id="total" required readonly></td></tr>
-                <tr><th>Custodio Responsable</th><td><input type="text" id="custodioResponsable" required></td></tr>
-                <tr><th>Personal D.G.R.S.</th><td><input type="text" id="personalDGRS" required></td></tr>
-            </tbody>
+        <form id="registroForm">
+            <label>Fecha: <input type="date" id="fecha" required></label>
+            <label>Hora: <input type="time" id="hora" required></label>
+            <label>Motivo: <input type="text" id="motivo" required></label>
+            <label>Excarcelados (H): <input type="number" id="excarceladosH" required></label>
+            <label>Excarcelados (M): <input type="number" id="excarceladosM" required></label>
+            <label>Presentes (H): <input type="number" id="presentesH" required></label>
+            <label>Presentes (M): <input type="number" id="presentesM" required></label>
+            <label>Total: <input type="number" id="total" required readonly></label>
+            <label>Custodio Responsable: <input type="text" id="custodioResponsable" required></label>
+            <label>Personal DGRS: <input type="text" id="personalDGRS" required></label>
+            <button type="button" onclick="guardarRegistro()">Guardar</button>
+            <button type="button" onclick="exportarPDF()">Exportar a PDF</button>
+        </form>
+        <table id="tablaRegistros">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Motivo</th>
+                    <th>Excarc. (H)</th>
+                    <th>Excarc. (M)</th>
+                    <th>Pres. (H)</th>
+                    <th>Pres. (M)</th>
+                    <th>Total</th>
+                    <th>Custodio</th>
+                    <th>Personal DGRS</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
         </table>
-
-        <button class="btn" onclick="guardarRegistro()">Guardar</button>
-        <button class="btn" onclick="exportarPDF()">Guardar PDF del Día</button>
-        <button class="btn" onclick="exportarPDFCompleto()">Guardar PDF Completo</button>
-        <button class="btn" onclick="cerrarSesion()">Cerrar Sesión</button>
     </div>
-
     <script>
-        function sumarTotal() {
-            const excarceladosH = parseInt(document.getElementById('excarceladosH').value) || 0;
-            const excarceladosM = parseInt(document.getElementById('excarceladosM').value) || 0;
-            const presentesH = parseInt(document.getElementById('presentesH').value) || 0;
-            const presentesM = parseInt(document.getElementById('presentesM').value) || 0;
-            document.getElementById('total').value = excarceladosH + excarceladosM + presentesH + presentesM;
-        }
-
         function guardarRegistro() {
             const registro = {
                 fecha: document.getElementById('fecha').value,
@@ -77,39 +70,51 @@
                 custodioResponsable: document.getElementById('custodioResponsable').value,
                 personalDGRS: document.getElementById('personalDGRS').value
             };
-
+            
             let registros = JSON.parse(localStorage.getItem('registros')) || [];
             registros.push(registro);
             localStorage.setItem('registros', JSON.stringify(registros));
-
-            alert('Registro guardado con éxito.');
+            mostrarRegistros();
         }
-
+        
+        function mostrarRegistros() {
+            let registros = JSON.parse(localStorage.getItem('registros')) || [];
+            let tbody = document.querySelector('#tablaRegistros tbody');
+            tbody.innerHTML = '';
+            registros.forEach(registro => {
+                let fila = `<tr>
+                    <td>${registro.fecha}</td>
+                    <td>${registro.hora}</td>
+                    <td>${registro.motivo}</td>
+                    <td>${registro.excarceladosH}</td>
+                    <td>${registro.excarceladosM}</td>
+                    <td>${registro.presentesH}</td>
+                    <td>${registro.presentesM}</td>
+                    <td>${registro.total}</td>
+                    <td>${registro.custodioResponsable}</td>
+                    <td>${registro.personalDGRS}</td>
+                </tr>`;
+                tbody.innerHTML += fila;
+            });
+        }
+        
         function exportarPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: "landscape" });
-
-            doc.text('Registro de Internos', 14, 10);
-
-            const registros = JSON.parse(localStorage.getItem('registros')) || [];
-            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarcelados H', 'Excarcelados M', 'Presentes H', 'Presentes M', 'Total', 'Custodio Responsable', 'Personal D.G.R.S.'];
-            const data = registros.map(reg => [
-                reg.fecha, reg.hora, reg.motivo, reg.excarceladosH, reg.excarceladosM, 
-                reg.presentesH, reg.presentesM, reg.total, reg.custodioResponsable, reg.personalDGRS
+            const doc = new jsPDF();
+            doc.text('Registro de Internos', 105, 20, null, null, 'center');
+            doc.addImage('logo_sspc2.png', 'PNG', 10, 10, 30, 30);
+            
+            let registros = JSON.parse(localStorage.getItem('registros')) || [];
+            const headers = ['Fecha', 'Hora', 'Motivo', 'Excarc. (H)', 'Excarc. (M)', 'Pres. (H)', 'Pres. (M)', 'Total', 'Custodio', 'Personal DGRS'];
+            const data = registros.map(r => [
+                r.fecha, r.hora, r.motivo, r.excarceladosH, r.excarceladosM,
+                r.presentesH, r.presentesM, r.total, r.custodioResponsable, r.personalDGRS
             ]);
-
-            doc.autoTable({ head: [headers], body: data, startY: 20 });
+            
+            doc.autoTable({ head: [headers], body: data, startY: 40 });
             doc.save('registro_internos.pdf');
         }
-
-        function exportarPDFCompleto() {
-            exportarPDF();
-        }
-
-        function cerrarSesion() {
-            localStorage.removeItem('loggedIn');
-            window.location.href = 'index.html';
-        }
+        
+        document.addEventListener('DOMContentLoaded', mostrarRegistros);
     </script>
 </body>
 </html>

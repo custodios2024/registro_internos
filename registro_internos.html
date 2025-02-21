@@ -98,44 +98,42 @@
             document.getElementById('total').value = excarceladosH + excarceladosM + presentesH + presentesM;
         }
 
-        function guardarRegistro() {
-            const form = document.getElementById('registroForm');
-            const formData = new FormData(form);
+       function guardarRegistro() {
+    const form = document.getElementById('registroForm');
+    const formData = new FormData(form);
 
-            let registro = {};
-            formData.forEach((value, key) => {
-                if (key !== 'centroInternamiento') { // Excluyendo centroInternamiento
-                    registro[key] = value.toUpperCase();
-                }
-            });
-
-            const fecha = registro.fecha; // Extraemos la fecha del registro
-            const hora = registro.hora; // Extraemos la hora del registro
-            let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
-            let registros = registrosPorFecha[fecha] || [];
-
-            // Verifica si ya se guardó un registro con la misma hora
-            if (registros.some(reg => reg.hora === hora)) {
-                alert('Ya se ha guardado un registro con esta hora. No se puede guardar el mismo registro nuevamente.');
-                return;
-            }
-
-            if (registros.length < 500) {
-                if (!registroGuardado) {
-                    registros.push(registro);
-                    registrosPorFecha[fecha] = registros;
-                    localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
-                    registroGuardado = true;
-                    alert('Registro guardado con éxito.');
-                    actualizarFechasDisponibles();
-                    mostrarRegistrosPorFecha();
-                } else {
-                    alert('Ya se ha guardado un registro para este día. No se pueden guardar más registros.');
-                }
-            } else {
-                alert('Se han alcanzado los 10 registros para esta fecha.');
-            }
+    let registro = {};
+    formData.forEach((value, key) => {
+        if (key !== 'centroInternamiento') { // Excluyendo centroInternamiento
+            registro[key] = value.toUpperCase();
         }
+    });
+
+    const fecha = registro.fecha;
+    const hora = registro.hora;
+    let registrosPorFecha = JSON.parse(localStorage.getItem('registrosPorFecha')) || {};
+    let registros = registrosPorFecha[fecha] || [];
+
+    // Verifica si ya hay un registro con la misma hora
+    if (registros.some(reg => reg.hora === hora)) {
+        alert('Ya se ha guardado un registro con esta hora. Intente con una hora diferente.');
+        return;
+    }
+
+    // Permite guardar hasta 10 registros por día con diferentes horas
+    if (registros.length < 10) {
+        registros.push(registro);
+        registrosPorFecha[fecha] = registros;
+        localStorage.setItem('registrosPorFecha', JSON.stringify(registrosPorFecha));
+
+        alert('Registro guardado con éxito.');
+        actualizarFechasDisponibles();
+        mostrarRegistrosPorFecha();
+    } else {
+        alert('Se han alcanzado los 10 registros para esta fecha.');
+    }
+}
+
 
         function mostrarRegistrosPorFecha() {
             const fechaSeleccionada = document.getElementById('fechaSeleccion').value;
